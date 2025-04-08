@@ -47,15 +47,7 @@ module.exports.getTours = async (req, res, next) => {
             }
         }
 
-
-        // Building the condition for $or condition
-        // new RegExp("pattern",flags) object is used to make a data case insensitive "i" stands for insensitive  
-        // if (destination) condition.push({ destination: new RegExp(destination, 'i') });//i.e{ destination: /mustang/i }
-        // if (category) condition.push({ category: new RegExp(category, 'i') });
-        // if (type) condition.push({ type: new RegExp(type, 'i') });
-        // if (duration) condition.push({ duration: duration });
-        // if (name) condition.push({ name: new RegExp(name, 'i') });
-        // console.log(condition)
+     
 
         // Fetching the data from the database using $or condition for flexible matching
         let tourQuery = Tour.find();
@@ -137,8 +129,7 @@ module.exports.postTour = async (req, res, next) => {
                 }
             }
         }
-        // console.log(req.files)
-        // console.log(req.body)
+       
 
         // Handle multiple file uploads (if present)
         // if (req.files) {
