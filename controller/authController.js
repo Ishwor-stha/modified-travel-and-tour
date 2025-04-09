@@ -292,7 +292,7 @@ module.exports.forgotPassword = async (req, res, next) => {
 
         //                               message part
         //generate  token
-        const resetToken = await crypto.randomBytes(16).toString('hex');
+        const resetToken =  crypto.randomBytes(16).toString('hex');
 
         // Set expiration time (e.g., 1 hour from now)
         const expirationTime = Date.now() + 900000; // 15 minutes in milliseconds
