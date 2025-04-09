@@ -29,7 +29,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(express.json({limit: '10kb'}))//limiting the json body size to 10 kb
 //security 
-//app.use(limiter);
+app.use(limiter);
 app.use(helmet());
 app.use(preventHPP);
 app.use(cors(corsOptions));
