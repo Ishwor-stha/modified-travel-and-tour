@@ -16,7 +16,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
     try {
         const allAdmin = await admin.find({}, "-_id -password");//exclude _id and password
         // if there is no admin
-        if (!allAdmin || Object.keys(allAdmin).length<=0)return next(new errorHandling("No tour found.",404)); 
+        if (!allAdmin || Object.keys(allAdmin).length<=0)return next(new errorHandling("No Admin found.",404)); 
         
         res.status(200).json({
             status: "success",
@@ -58,7 +58,7 @@ module.exports.createAdmin = async (req, res, next) => {
             confirmPassword,
             email
         });
-        if (!newAdmin || Object.keys(newAdmin) <= 0) return next(new errorHandling("Cannot create admin.Please try again.", 500));
+        if (!newAdmin || Object.keys(newAdmin).length <= 0) return next(new errorHandling("Cannot create admin.Please try again.", 500));
         // await newAdmin.save();  // Save the admin
 
         // Respond with success
@@ -171,7 +171,12 @@ module.exports.logout = (req, res, next) => {
     try {
         const token = req.cookies.auth_token;
         if (!token) return next(new errorHandling("Please login first.", 403));
-        const check = jwt.verify(token, process.env.SECRETKEY);
+        let check;
+        try {
+            check = jwt.verify(token, process.env.SECRETKEY);
+        } catch (err) {
+            return next(new errorHandling("Invalid token. Please clear the browser and login again.", 400));
+        }
         // if token verification fails
         if (!check) return next(new errorHandling("Invalid token given.Please clear the browser and login again.", 400));
         //clear the cookie from browser
