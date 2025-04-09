@@ -253,7 +253,6 @@ module.exports.updateAdmin = async (req, res, next) => {
 // @endpoint: localhost:6000/admin/delete-admin
 module.exports.removeAdmin = async (req, res, next) => {
     try {
-
         const adminId = req.params.id;//from url
         if (!adminId) return next(new errorHandling("No admin admin id is provided please try again.", 400));
         const del = await admin.findByIdAndDelete(adminId);
@@ -324,14 +323,14 @@ module.exports.resetPassword = async (req, res, next) => {
     try {
         // Check if password and confirmPassword are provided
         if (!req.body.password || !req.body.confirmPassword) {
-            return next(new errorHandling("Confirm password or password is missing.Please try again.", 400));
+            return next(new errorHandling("Confirm password or password is missing. Please try again.", 400));
         }
         // destructuring
         let { password, confirmPassword } = req.body;
 
         // Check if the password and confirmPassword match
         if (password !== confirmPassword) {
-            return next(new errorHandling("Password and confirm password do not match.Please enter correct password.", 400));
+            return next(new errorHandling("Password and confirm password do not match. Please enter correct password.", 400));
         } else {
             // Hash the password
             const salt = await bcrypt.genSalt(10);
@@ -351,7 +350,7 @@ module.exports.resetPassword = async (req, res, next) => {
         let adminCode = await admin.findOne({ code });
         // no admin
         if (!adminCode) {
-            return next(new errorHandling("Code expired or invalid.Please request new one.", 400));
+            return next(new errorHandling("Code expired or invalid. Please request a new one.", 400));
         }
 
         // Check if the reset code has expired
