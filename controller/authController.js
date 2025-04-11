@@ -39,7 +39,7 @@ module.exports.createAdmin = async (req, res, next) => {
             return next(new errorHandling("Password or confirm password is empty.Please try again.", 400));
         }
         // destructuring the fields from req.body
-        const { name, password, confirmPassword, email } = req.body;
+        let { name, password, confirmPassword, email } = req.body;
         // no name and email
         if (!name || !email) {
             return next(new errorHandling("Name or Email is missing.Please check and try again.", 400));
@@ -74,7 +74,7 @@ module.exports.createAdmin = async (req, res, next) => {
 
             return next(new errorHandling(error.message, error.statusCode || 500));
         }
-        // catch duplicate key errore.g., duplicate name or email)
+        // catch duplicate key error (e.g., duplicate name or email)
         if (error.code === 11000) {
 
             return next(new errorHandling("Please try a different name or email.", 409));
@@ -322,7 +322,7 @@ module.exports.forgotPassword = async (req, res, next) => {
             return next(new errorHandling("Please enter valid email address.", 400));
         }
         // check email in database
-        const findMail = await admin.findOne({ email }, " -password");//exclude _id ,password and name
+        const findMail = await admin.findOne({ email }, "-_id -password -code -resetExpiry");//exclude _id, password, code, and resetExpiry
         // no email
         if (!findMail ) {
             return next(new errorHandling("Email not found.Please enter correct email address.", 404));
@@ -330,20 +330,23 @@ module.exports.forgotPassword = async (req, res, next) => {
 
         //                               message part
         //generate  token
-        const resetToken =  crypto.randomBytes(16).toString('hex');
+        const passwordResetToken =  crypto.randomBytes(16).toString('hex');
 
         // Set expiration time (e.g., 1 hour from now)
         const expirationTime = Date.now() + 900000; // 15 minutes in milliseconds
         // update code and expiry time
-        await admin.findByIdAndUpdate(findMail._id, { "code": resetToken, "resetExpiry": expirationTime });
+        const updatedAdmin = await admin.findByIdAndUpdate(findMail._id, { "code": passwordResetToken, "resetExpiry": expirationTime });
+        if (!updatedAdmin) {
+            return next(new errorHandling("Failed to update reset token. Admin not found.", 404));
+        }
         // Create the reset link
-        const resetLink = `${process.env.URL}/admin/reset-password/${resetToken}`;
+        const resetLink = `${process.env.URL}/admin/reset-password/${passwordResetToken}`;
         // Construct the email message
         const message = messages(resetLink);
 
         // send message
         await sendMessage(next, message, "Reset link", findMail.email, findMail.name);
-
+            message: "Password reset email has been sent to your email address."
         res.status(200).json({
             status: "success",
             message: "Password reset email is send to mail."
