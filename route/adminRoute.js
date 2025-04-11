@@ -9,7 +9,7 @@ Router.route("/create-admin/").post(admin.checkJwt,admin.createAdmin);
 
 // Router.route("/delete").delete(admin.deleteAll);
 
-Router.route("/login-admin/").post(admin.login);
+Router.route("/login-admin/").post(admin.checkIfDeleted,admin.login);
 
 Router.route("/logout-admin/").delete(admin.checkJwt,admin.logout);
 

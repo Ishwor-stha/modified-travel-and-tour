@@ -47,6 +47,10 @@ const adminSchema = mongoose.Schema({
     },
     resetExpiry: {
         type: Number
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false
     }
 });
 

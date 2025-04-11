@@ -84,13 +84,8 @@ module.exports.createAdmin = async (req, res, next) => {
 
     }
 };
-
-// @method POST
-// @desc:controller to login
-// @endpoint: localhost:6000/admin/login-admin
-module.exports.login = async (req, res, next) => {
+module.exports.checkIfDeleted=async(req,res,next)=>{
     try {
-        // destrcturing
         let { email, password } = req.body;
         // if no email and password
         if (!email || !password) {
@@ -105,11 +100,40 @@ module.exports.login = async (req, res, next) => {
         // fetch data from email
         const user = await admin.findOne({ email });
         // no data
-        if (!user) {
+        if (!user || user.isDeleted) {
             return next(new errorHandling("Cannot find the user from this email address.", 404));
         }
+        req.userData=user
+        next();
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
+    }
+}
+// @method POST
+// @desc:controller to login
+// @endpoint: localhost:6000/admin/login-admin
+module.exports.login = async (req, res, next) => {
+    try {
+        // destrcturing
+        // let { email, password } = req.body;
+        // // if no email and password
+        // if (!email || !password) {
+        //     return next(new errorHandling("Email or password is missing.Please try again.", 400));
+        // }
+
+        // // check email validation 
+        // if (!validateEmail(email)) {
+        //     return next(new errorHandling("Please enter valid email address.", 400));
+        // }
+
+        // fetch data from email
+        // const user = await admin.findOne({ email });
+        // // no data
+        // if (!user) {
+        //     return next(new errorHandling("Cannot find the user from this email address.", 404));
+        // }
         // compare password
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(req.body.password, req.userData.password);
         // match fails
         if (!isMatch) {
             return next(new errorHandling("Password doesnot match.Please enter correct password.", 400));
@@ -117,8 +141,8 @@ module.exports.login = async (req, res, next) => {
 
 
         const payload = {
-            userId: user._id,
-            email: user.email
+            userId: req.userData._id,
+            email: req.userData.email
         };
         // generate jwt token
         const token = jwt.sign(payload, process.env.SECRETKEY, { expiresIn: process.env.jwtExpires });
@@ -260,8 +284,9 @@ module.exports.removeAdmin = async (req, res, next) => {
     try {
         const adminId = req.params.id;//from url
         if (!adminId) return next(new errorHandling("No admin admin id is provided please try again.", 400));
-        const del = await admin.findByIdAndDelete(adminId);
-        // no admin
+        const del = await admin.findByIdAndUpdate(adminId,{isDeleted:true});
+        // check if admin is deleted
+        // if (!del) {
         if (!del) {
             throw new errorHandling("Failed to remove admin.Please try again.", 500);
         }
