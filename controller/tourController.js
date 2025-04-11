@@ -96,7 +96,7 @@ module.exports.getOneTour = async (req, res, next) => {
         const { slug } = req.params;
         if (!slug) return next(new errorHandler("No slug given of tour.Please try again.", 400));
         const tour = await Tour.findOne({ slug: slug }, "");
-        if (!tour || Object.keys(tour).length < 0) return next(new errorHandler("No tour found.Please try again.", 404));
+        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.", 404));
         res.status(200).json({
             status: "success",
             tour
