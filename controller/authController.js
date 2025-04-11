@@ -324,7 +324,7 @@ module.exports.forgotPassword = async (req, res, next) => {
         // check email in database
         const findMail = await admin.findOne({ email }, " -password");//exclude _id ,password and name
         // no email
-        if (!findMail || Object.keys(findMail).length <= 0) {
+        if (!findMail ) {
             return next(new errorHandling("Email not found.Please enter correct email address.", 404));
         }
 
