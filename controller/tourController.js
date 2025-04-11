@@ -307,7 +307,7 @@ module.exports.enquiry = async (req, res, next) => {
         // check phone number if it is valid or not
         if (!isValidNepaliPhoneNumber(contact)) return next(new errorHandler("Please enter valid phone number.", 400));
         // concat the first name and last name
-        const name = firstName + lastName;
+        const name =` ${firstName } ${lastName}`;
         // create message template form enquiryMessage Function
         const createMessage = enquiryMessage(name, email, contact, question);
         // Send message
