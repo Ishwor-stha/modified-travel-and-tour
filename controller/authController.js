@@ -16,9 +16,10 @@ module.exports.getAllAdmin = async (req, res, next) => {
     try {
         const allAdmin = await admin.find({}, "-_id -password");//exclude _id and password
         // if there is no admin
-        if (!allAdmin || Object.keys(allAdmin).length<=0)return next(new errorHandling("No Admin found.",404)); 
+        if (!allAdmin || allAdmin.length===0)return next(new errorHandling("No Admin found.",404)); 
         
         res.status(200).json({
+            totalAdmin: allAdmin.length,
             status: "success",
             allAdmin
         });
