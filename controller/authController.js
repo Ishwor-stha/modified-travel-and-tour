@@ -91,7 +91,7 @@ module.exports.checkIfDeleted=async(req,res,next)=>{
         if (!email || !password) {
             return next(new errorHandling("Email or password is missing.Please try again.", 400));
         }
-
+        email=email.toLowerCase();
         // check email validation 
         if (!validateEmail(email)) {
             return next(new errorHandling("Please enter valid email address.", 400));
@@ -259,9 +259,13 @@ module.exports.updateAdmin = async (req, res, next) => {
         for (key in req.body) {
             // check the key macthes to the object of req.body
             if (details.includes(key)) {
+                if(key==="email"){
+                    req.body["email"]=req.body.email.toLowerCase();
+                }
                 updatedData[key] = req.body[key];
             }
         }
+        
         // update the data in databse
         const updateUser = await admin.findByIdAndUpdate(userId, updatedData);
         // no user
