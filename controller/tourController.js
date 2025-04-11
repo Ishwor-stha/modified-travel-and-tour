@@ -77,6 +77,7 @@ module.exports.getTours = async (req, res, next) => {
         if (!tour || Object.keys(tour).length <= 0) return next(new errorHandler("No tour found.", 404));
 
         res.status(200).json({
+            pageNo: page,
             totalTours:tour.length,
             status: "success",
             tourList: tour
@@ -272,7 +273,7 @@ module.exports.bookTour = async (req, res, next) => {
         const { firstName, lastName, date, phone, email, time, age } = req.body;
         // if data is missing
         if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
-        const name = firstName + " " + lastName;
+        const name = `${firstName} ${lastName}`;
         // email validation falils
         if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         //phone number validation fails
