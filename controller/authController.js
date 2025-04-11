@@ -50,7 +50,7 @@ module.exports.createAdmin = async (req, res, next) => {
             return next(new errorHandling("Password or confirm password does not match.Please try again.", 400));
 
         }
-
+        email=email.toLowerCase();
         // Create new admin in the database
         const newAdmin = await admin.create({
             name,
