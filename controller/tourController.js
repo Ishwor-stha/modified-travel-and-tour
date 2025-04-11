@@ -77,6 +77,7 @@ module.exports.getTours = async (req, res, next) => {
         if (!tour || Object.keys(tour).length <= 0) return next(new errorHandler("No tour found.", 404));
 
         res.status(200).json({
+            totalTours:tour.length,
             status: "success",
             tourList: tour
         });
