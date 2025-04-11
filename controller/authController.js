@@ -84,6 +84,9 @@ module.exports.createAdmin = async (req, res, next) => {
 
     }
 };
+
+// @method POST
+// @desc:controller to check if admin is deleted or not
 module.exports.checkIfDeleted=async(req,res,next)=>{
     try {
         let { email, password } = req.body;
