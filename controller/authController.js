@@ -6,6 +6,7 @@ const crypto = require('crypto');
 const { validateEmail } = require("../utils/emailValidation");
 const { messages } = require("../utils/message");
 const sendMessage = require("../utils/sendMessage");
+const {successMessage} = require("../utils/sucessMessage");
 
 
 
@@ -63,10 +64,8 @@ module.exports.createAdmin = async (req, res, next) => {
         // await newAdmin.save();  // Save the admin
 
         // Respond with success
-        res.status(201).json({
-            status: "success",
-            message: "Account created successfully."
-        });
+        successMessage(res, "Admin created successfully.",201);
+       
     } catch (error) {
         // Catch validation errors or other errors
         if (error.name === "ValidationError") {
@@ -157,10 +156,12 @@ module.exports.login = async (req, res, next) => {
             sameSite: "Strict",
             maxAge: 3600 * 1000
         });
-        return res.status(200).json({
-            status: "success",
-            message: `Hello ${req.userData.name}.`,
-        });
+        successMessage(res,`Hello ${req.userData.name}.`,200);
+
+        // return res.status(200).json({
+        //     status: "success",
+        //     message: `Hello ${req.userData.name}.`,
+        // });
     } catch (error) {
 
         return next(new errorHandling(error.message, error.statusCode || 500));
@@ -213,10 +214,8 @@ module.exports.logout = (req, res, next) => {
             httpOnly: true,
             sameSite: "Strict"
         });
-        return res.status(200).json({
-            status: "success",
-            message: "You have been logged out."
-        });
+        successMessage(res, "You have been logged out.", 200);
+       
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
@@ -277,10 +276,8 @@ module.exports.updateAdmin = async (req, res, next) => {
         if (!updateUser) {
             return next(new errorHandling("Cannot update data.Please try again.", 500));
         }
-        res.status(200).json({
-            status: "success",
-            message: "Details changed sucessfully."
-        });
+        successMessage(res, "Details updated successfully.", 200);
+       
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
@@ -299,10 +296,8 @@ module.exports.removeAdmin = async (req, res, next) => {
         if (!del) {
             throw new errorHandling("Failed to remove admin.Please try again.", 500);
         }
-        res.status(200).json({
-            status: "success",
-            message: "Admin removed sucessfully."
-        });
+        successMessage(res, "Admin removed successfully.", 200);
+    
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
 
@@ -347,12 +342,8 @@ module.exports.forgotPassword = async (req, res, next) => {
 
         // send message
         await sendMessage(next, message, "Reset link", findMail.email, findMail.name);
-            message: "Password reset email has been sent to your email address."
-        res.status(200).json({
-            status: "success",
-            message: "Password reset email is send to mail."
-        });
-
+        successMessage(res, "Password reset email has been sent to your email address.", 200);
+      
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
@@ -433,10 +424,7 @@ module.exports.resetPassword = async (req, res, next) => {
         }
 
         // Return success response
-        res.status(200).json({
-            status: "success",
-            message: "Password changed successfully."
-        });
+        successMessage(res, "Password changed successfully.", 200);
 
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
