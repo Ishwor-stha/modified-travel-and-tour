@@ -21,7 +21,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
         
         res.status(200).json({
             totalAdmin: allAdmin.length,
-            status: "success",
+            status: true,
             allAdmin
         });
     } catch (error) {

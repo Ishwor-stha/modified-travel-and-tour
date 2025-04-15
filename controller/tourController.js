@@ -80,7 +80,7 @@ module.exports.getTours = async (req, res, next) => {
         res.status(200).json({
             pageNo: page,
             totalTours:tour.length,
-            status: "success",
+            status: true,
             tourList: tour
         });
 
@@ -101,7 +101,7 @@ module.exports.getOneTour = async (req, res, next) => {
         const tour = await Tour.findOne({ slug: slug }, "");
         if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.", 404));
         res.status(200).json({
-            status: "success",
+            status: true,
             tour
         })
 
@@ -154,7 +154,7 @@ module.exports.postTour = async (req, res, next) => {
 
         // Successfully created the tour
         res.status(201).json({
-            status: "success",
+            status: true,
             message: `${newTour.name} created successfully`
         });
 
@@ -222,7 +222,7 @@ module.exports.updateTour = async (req, res, next) => {
 
         // sending response
         res.status(200).json({
-            status: "success",
+            status: true,
             name: updateTour.name,
             updatedData
         });
@@ -248,7 +248,7 @@ module.exports.deleteTour = async (req, res, next) => {
         if (!del || Object.keys(del).length <= 0) return next(new errorHandler("No Tour found.Please try again.", 404));
         // sending response
         res.status(200).json({
-            status: "success",
+            status: true,
             message: `${del.name} deleted .`
 
         })
