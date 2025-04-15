@@ -153,6 +153,7 @@ module.exports.login = async (req, res, next) => {
         // send token and store on cookie
         res.cookie("auth_token", token, {
             httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
             maxAge: 3600 * 1000
         });
