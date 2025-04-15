@@ -158,10 +158,7 @@ module.exports.login = async (req, res, next) => {
         });
         successMessage(res,`Hello ${req.userData.name}.`,200);
 
-        // return res.status(200).json({
-        //     status: "success",
-        //     message: `Hello ${req.userData.name}.`,
-        // });
+       
     } catch (error) {
 
         return next(new errorHandling(error.message, error.statusCode || 500));

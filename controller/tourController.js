@@ -9,6 +9,7 @@ const { isValidNepaliPhoneNumber } = require("../utils/validatePhoneNumber");
 const sendMessage = require("../utils/sendMessage");
 const { isValidNumber } = require("../utils/isValidNumber");
 const { enquiryMessage } = require("../utils/enquiryMessage");
+const {successMessage} = require("../utils/sucessMessage");
 
 
 //@method :GET 
@@ -283,10 +284,7 @@ module.exports.bookTour = async (req, res, next) => {
         // send message to the email
         await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
         // send response
-        res.status(200).json({
-            status: "success",
-            message: "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour"
-        });
+        successMessage(res, "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour", 200);
 
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
@@ -315,11 +313,8 @@ module.exports.enquiry = async (req, res, next) => {
         // Send message
         await sendMessage(next, createMessage, "Enquiry message", email, name);
         // send sucess response
-        res.status(200).json({
-            status: "success",
-            message: "Your question is sent.Please wait for the reply."
-        })
-
+        successMessage(res, "Your question is sent. Please wait for the reply.",200);
+       
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
