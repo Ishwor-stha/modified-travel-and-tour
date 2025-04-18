@@ -1,25 +1,27 @@
 const express=require("express");
+const  {checkJwt,getAllAdmin,createAdmin,login,logout,updateAdmin,removeAdmin,forgotPassword,resetPassword,checkIfDeleted}  = require("../controller/authController");
+
 const  admin  = require("../controller/authController");
 
 const Router=express.Router();
 
-Router.route("/get-admins").get(admin.checkJwt, admin.getAllAdmin);
+Router.route("/get-admins").get(checkJwt,getAllAdmin);
 
-Router.route("/create-admin/").post(admin.checkJwt,admin.createAdmin);
+Router.route("/create-admin/").post(checkJwt,createAdmin);
 
 // Router.route("/delete").delete(admin.deleteAll);
 
-Router.route("/login-admin/").post(admin.checkIfDeleted,admin.login);
+Router.route("/login-admin/").post(checkIfDeleted,login);
 
-Router.route("/logout-admin/").delete(admin.checkJwt,admin.logout);
+Router.route("/logout-admin/").delete(checkJwt,logout);
 
-Router.route("/update-admin/").patch(admin.checkJwt, admin.updateAdmin);
+Router.route("/update-admin/").patch(checkJwt, updateAdmin);
 
-Router.route("/remove-admin/:id").delete(admin.checkJwt, admin.removeAdmin);
+Router.route("/remove-admin/:id").delete(checkJwt, removeAdmin);
 
-Router.route("/forget-password").post( admin.forgotPassword);
+Router.route("/forget-password").post( forgotPassword);
 
-Router.route("/reset-password/:code").patch(admin.resetPassword);
+Router.route("/reset-password/:code").patch(resetPassword);
 
 
 
