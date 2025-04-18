@@ -1,7 +1,6 @@
 const express=require("express");
 const  {checkJwt,getAllAdmin,createAdmin,login,logout,updateAdmin,removeAdmin,forgotPassword,resetPassword,checkIfDeleted}  = require("../controller/authController");
 
-const  admin  = require("../controller/authController");
 
 const Router=express.Router();
 
