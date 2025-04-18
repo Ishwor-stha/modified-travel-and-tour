@@ -196,7 +196,7 @@ module.exports.updateTour = async (req, res, next) => {
             throw new Error("Please enter valid discount number");//straight to the catch block
 
         }
-        let oldPhoto;
+        // let oldPhoto;
         // if (req.files) {
         //     updatedData.image = req.files.map(file => file.path); // Update image if new file is uploaded
         //     oldPhoto = await Tour.findById(id, "image");
