@@ -197,7 +197,7 @@ module.exports.checkJwt = (req, res, next) => {
 module.exports.logout = (req, res, next) => {
     try {
         const token = req.cookies.auth_token;
-        if (!token) return next(new errorHandling("Please login first.", 403));
+        if (!token) return next(new errorHandling("Please login to be able to logout.", 403));
         let check;
         try {
             check = jwt.verify(token, process.env.SECRETKEY);
@@ -231,7 +231,7 @@ module.exports.updateAdmin = async (req, res, next) => {
         if (req.body.email) {
             //validate email 
             if (!validateEmail(req.body.email)) {
-                return next(new errorHandling("Please enter valid email address.", 400));
+                return next(new errorHandling("Email is not valid .Please enter valid email address.", 400));
             }
 
         }
