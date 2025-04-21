@@ -53,14 +53,14 @@ app.use("/api/admin/", adminRoute);
 //         message: "Invalid website path"
 //     });
 // });
-
-// ..........................................................
-app.use((req,res)=>{
-   return res.status(400).json({
+app.all('/{*any}', (req, res, next) => {
+    return res.status(400).json({
         status: "fail",
         message: "Invalid website path"
     });
 })
+// ..........................................................
+
 // Global error handling middleware
 app.use(errorController);
 
