@@ -284,7 +284,8 @@ module.exports.bookTour = async (req, res, next) => {
         // create message 
         const message = bookMessage(name, tourName, date, phone, email, time, age);
         // send message to the email
-        await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
+        await sendMessage(res,process.env.personal_message_gmail,"Tour Booking Alert",message)
+        // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
         // send response
         successMessage(res, "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour", 200);
 
@@ -313,7 +314,9 @@ module.exports.enquiry = async (req, res, next) => {
         // create message template form enquiryMessage Function
         const createMessage = enquiryMessage(name, email, contact, question);
         // Send message
-        await sendMessage(next, createMessage, "Enquiry message", email, name);
+        
+        await sendMessage(res,process.env.NODEMAILER_USER,"Enquiry message",createMessage);//NOTE: ENTER THE REAL COMPANY EMAIL INSTEAD OF NODEMAILER USER.
+        // await sendMessage(next, createMessage, "Enquiry message", email, name);
         // send sucess response
         successMessage(res, "Your question is sent. Please wait for the reply.",200);
        
