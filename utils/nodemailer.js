@@ -1,5 +1,11 @@
 const nodemailer = require('nodemailer');
+const dotenv=require("dotenv")
+dotenv.config()
+// console.log(process.env.NAME)
 
+// console.log(process.env.NODEMAILER_USER)
+
+// console.log(process.env.NODEMAILER_USER_PASSWORD)
 const sendMessage = async (res,email, subject, message) => {
     try {
         // Create a transporter object
@@ -7,7 +13,7 @@ const sendMessage = async (res,email, subject, message) => {
             service: 'gmail',
             auth: {
                 user: process.env.NODEMAILER_USER,
-                pass: process.env.NODEMAILER_USER.PASSWORD 
+                pass:process.env.NODEMAILER_USER_PASSWORD
             }
         });
 
