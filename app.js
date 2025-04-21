@@ -44,13 +44,23 @@ app.use("/api/", tourRoute);
 app.use("/api/admin/", adminRoute);
 
 // Handle any unhandled routes with a 404 error
-app.all("*", (req, res) => {
+
+// ....................................
+// the below line of code doesnot on latest version of express because '*' no longer supports 
+// app.all('*', (req, res) => {
+//     res.status(400).json({
+//         status: "fail",
+//         message: "Invalid website path"
+//     });
+// });
+
+// ..........................................................
+app.use((req,res)=>{
     res.status(400).json({
         status: "fail",
         message: "Invalid website path"
     });
-});
-
+})
 // Global error handling middleware
 app.use(errorController);
 
