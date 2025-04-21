@@ -56,7 +56,7 @@ app.use("/api/admin/", adminRoute);
 
 // ..........................................................
 app.use((req,res)=>{
-    res.status(400).json({
+   return res.status(400).json({
         status: "fail",
         message: "Invalid website path"
     });
