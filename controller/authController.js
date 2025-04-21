@@ -5,7 +5,8 @@ const jwt = require("jsonwebtoken");
 const crypto = require('crypto');
 const { validateEmail } = require("../utils/emailValidation");
 const { messages } = require("../utils/message");
-const sendMessage = require("../utils/sendMessage");
+// const sendMessage = require("../utils/sendMessage");
+const {sendMessage}=require("../utils/nodemailer")
 const {successMessage} = require("../utils/sucessMessage");
 
 
@@ -338,7 +339,8 @@ module.exports.forgotPassword = async (req, res, next) => {
         const message = messages(resetLink);
 
         // send message
-        await sendMessage(next, message, "Reset link", findMail.email, findMail.name);
+        await sendMessage(res,findMail.email,"Reset link",message)
+        // await sendMessage(next, message, "Reset link", findMail.email, findMail.name);
         successMessage(res, "Password reset email has been sent to your email address.", 200);
       
     } catch (error) {
