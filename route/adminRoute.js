@@ -8,7 +8,6 @@ Router.route("/get-admins").get(checkJwt,getAllAdmin);
 
 Router.route("/create-admin/").post(checkJwt,createAdmin);
 
-// Router.route("/delete").delete(admin.deleteAll);
 
 Router.route("/login-admin/").post(checkIfDeleted,login);
 
