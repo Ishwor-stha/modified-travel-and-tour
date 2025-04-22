@@ -9,7 +9,7 @@ const adminRoute = require("./route/adminRoute");
 const errorController = require('./controller/errorController');
 const app = express();
 // security packages
-const {limiter} = require("./utils/rateLimit");
+// const {limiter} = require("./utils/rateLimit");
 const helmet = require('helmet');
 const cors = require('cors');
 const {preventHPP}=require("./utils/preventHpp");
