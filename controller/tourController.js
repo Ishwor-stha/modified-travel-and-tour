@@ -23,14 +23,14 @@ module.exports.getTours = async (req, res, next) => {
 
         // let query={}
         let condition = [];
-        let fields = ["placeName", "active_month", "destination", "category", "tour_type", "duration", "name", "country", "district", "pickup_destination",]
+        let fields = ["placeName", "active_month", "destination", "category", "tour_type", "duration", "name", "country", "district", "pickup_destination",];
 
         // destructuring query parameters
         let { page = 1 } = req.query;
 
         // Handling the sorting logic
         if (req.query.adult_price || req.query.youth_price || req.query.popularity) {
-            const { adult_price, youth_price, popularity } = req.query
+            const { adult_price, youth_price, popularity } = req.query;
             if (adult_price) sort = adult_price === "asc" ? 1 : -1;
             if (youth_price) sort = youth_price === "asc" ? 1 : -1;
             if (popularity) sort = popularity === "asc" ? 1 : -1;
@@ -105,7 +105,7 @@ module.exports.getOneTour = async (req, res, next) => {
         res.status(200).json({
             status: true,
             tour
-        })
+        });
 
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
@@ -253,7 +253,7 @@ module.exports.deleteTour = async (req, res, next) => {
             status: true,
             message: `${del.name} deleted .`
 
-        })
+        });
     } catch (error) {
         // passing error to the error handling middleware
         next(new errorHandler(error.message, error.statusCode || 500));
@@ -269,7 +269,7 @@ module.exports.deleteTour = async (req, res, next) => {
 module.exports.bookTour = async (req, res, next) => {
     try {
 
-        const { tourName } = req.query
+        const { tourName } = req.query;
         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
         // destructring objects form req.body
 
@@ -284,7 +284,7 @@ module.exports.bookTour = async (req, res, next) => {
         // create message 
         const message = bookMessage(name, tourName, date, phone, email, time, age);
         // send message to the email
-        await sendMessage(res,process.env.personal_message_gmail,"Tour Booking Alert",message)
+        await sendMessage(res,process.env.personal_message_gmail,"Tour Booking Alert",message);
         // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
         // send response
         successMessage(res, "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour", 200);

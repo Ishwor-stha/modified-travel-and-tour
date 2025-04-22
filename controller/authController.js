@@ -6,7 +6,7 @@ const crypto = require('crypto');
 const { validateEmail } = require("../utils/emailValidation");
 const { messages } = require("../utils/message");
 // const sendMessage = require("../utils/sendMessage");
-const {sendMessage}=require("../utils/nodemailer")
+const {sendMessage}=require("../utils/nodemailer");
 const {successMessage} = require("../utils/sucessMessage");
 
 
@@ -107,7 +107,7 @@ module.exports.checkIfDeleted=async(req,res,next)=>{
         if (!user || user.isDeleted) {
             return next(new errorHandling("Cannot find the user from this email address.", 404));
         }
-        req.userData=user
+        req.userData=user;
         next();
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
@@ -339,7 +339,7 @@ module.exports.forgotPassword = async (req, res, next) => {
         const message = messages(resetLink);
 
         // send message
-        await sendMessage(res,findMail.email,"Reset link",message)
+        await sendMessage(res,findMail.email,"Reset link",message);
         // await sendMessage(next, message, "Reset link", findMail.email, findMail.name);
         successMessage(res, "Password reset email has been sent to your email address.", 200);
       
