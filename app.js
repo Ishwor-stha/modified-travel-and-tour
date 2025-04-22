@@ -53,6 +53,8 @@ app.use("/api/admin/", adminRoute);
 //         message: "Invalid website path"
 //     });
 // });
+
+// New  way of catching unhandled routes 
 app.all('/{*any}', (req, res, next) => {
     return res.status(400).json({
         status: "fail",
