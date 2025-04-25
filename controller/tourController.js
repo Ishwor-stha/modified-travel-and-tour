@@ -41,7 +41,7 @@ module.exports.getTours = async (req, res, next) => {
                 if (keys === "active_month") {
 
                     // new RegExp("pattern",flags) object is used to make a data case insensitive "i" stands for insensitive  
-                    condition.push({ active_month: { $in: [req.query[keys]] } });;;//i.e{ destination: /mustang/i }
+                    condition.push({ active_month: { $in: [req.query[keys]] } });//i.e{ destination: /mustang/i }
                 }
                 else {
                     condition.push({ [keys]: new RegExp(req.query[keys], "i") });
@@ -62,7 +62,7 @@ module.exports.getTours = async (req, res, next) => {
 
         // If sorting by price 
         if (req.query.adult_price || req.query.youth_price || req.query.popularity) {
-            if (req.query.popularity) tourQuery = tourQuery.sort({ popularity: sort });;
+            if (req.query.popularity) tourQuery = tourQuery.sort({ popularity: sort });
             if (req.query.adult_price) tourQuery = tourQuery.sort({ adult_price: sort });
             if (req.query.youth_price) tourQuery = tourQuery.sort({ youth_price: sort });
 
@@ -209,7 +209,7 @@ module.exports.updateTour = async (req, res, next) => {
         // querying to database
         const updateTour = await Tour.findByIdAndUpdate(id, updatedData, { new: true });
         // console.log(updateTour)
-        if (!updateTour || Object.keys(updateTour).length < 0) {
+        if (!updateTour || Object.keys(updateTour).length === 0) {
             // if (req.files) {
             //     deleteImage(updatedData.image);
             // }
