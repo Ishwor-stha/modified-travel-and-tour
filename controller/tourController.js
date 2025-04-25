@@ -23,7 +23,7 @@ module.exports.getTours = async (req, res, next) => {
 
         // let query={}
         let condition = [];
-        let fields = ["placeName", "active_month", "destination", "category", "tour_type", "duration", "name", "country", "district", "pickup_destination",];
+        let fields = ["placeName", "active_month", "destination", "category", "tour_type", "duration", "name", "country", "district", "pickup_destination"];
 
         // destructuring query parameters
         let { page = 1 } = req.query;
