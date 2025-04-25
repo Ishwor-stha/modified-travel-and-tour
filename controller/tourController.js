@@ -193,7 +193,7 @@ module.exports.updateTour = async (req, res, next) => {
             }
         }
 
-        if (req.body.discount !== undefined &&  isValidNumber(req.body.discount)) {
+        if (req.body.discount !== undefined &&  !isValidNumber(req.body.discount)) {
             throw new Error("Please enter valid discount number");//straight to the catch block
 
         }
