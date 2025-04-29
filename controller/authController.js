@@ -103,7 +103,7 @@ module.exports.checkIfDeleted=async(req,res,next)=>{
         }
 
         // fetch data from email
-        const user = await admin.findOne({ email }).select('name isDeleted');
+        const user = await admin.findOne({ email });
         // no data
         // console.log(user);
         
@@ -111,6 +111,7 @@ module.exports.checkIfDeleted=async(req,res,next)=>{
             return next(new errorHandling("Cannot find the user from this email address.", 404));
         }
         req.userData=user;
+        // console.log(user)
         next();
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
