@@ -8,6 +8,7 @@ const { messages } = require("../utils/message");
 // const sendMessage = require("../utils/sendMessage");
 const {sendMessage}=require("../utils/nodemailer");
 const {successMessage} = require("../utils/sucessMessage");
+const { log } = require("console");
 
 
 
@@ -102,8 +103,10 @@ module.exports.checkIfDeleted=async(req,res,next)=>{
         }
 
         // fetch data from email
-        const user = await admin.findOne({ email });
+        const user = await admin.findOne({ email }).select('name isDeleted');
         // no data
+        // console.log(user);
+        
         if (!user || user.isDeleted) {
             return next(new errorHandling("Cannot find the user from this email address.", 404));
         }
