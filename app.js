@@ -18,7 +18,7 @@ const corsOptions = {
     origin: process.env.URL,
     // origin:["http://localhost:5173","http://localhost:6000"],
     methods: ["GET", "POST","PATCH","DELETE"],
-    credentials: true 
+    credentials: true
 }
 // loading environment variables from .env file
 dotenv.config();
