@@ -17,7 +17,8 @@ const {preventHPP}=require("./utils/preventHpp");
 const corsOptions = {
     origin: process.env.URL,
     // origin:["http://localhost:5173","http://localhost:6000"],
-    methods: ["GET", "POST","PATCH","DELETE"]
+    methods: ["GET", "POST","PATCH","DELETE"],
+    credentials: true 
 }
 // loading environment variables from .env file
 dotenv.config();
