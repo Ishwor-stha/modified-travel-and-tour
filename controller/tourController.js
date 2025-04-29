@@ -77,7 +77,7 @@ module.exports.getTours = async (req, res, next) => {
         const skip = (page - 1) * limit; // Skip results based on current page
         const tour = await tourQuery.skip(skip).limit(limit);
         // if there is is tour 
-        if (!tour || Object.keys(tour).length <= 0) return next(new errorHandler("No tour found.", 404));
+        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found in the database.", 404));
 
         res.status(200).json({
             pageNo: page,
