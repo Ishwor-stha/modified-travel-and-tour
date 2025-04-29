@@ -161,7 +161,7 @@ module.exports.login = async (req, res, next) => {
             sameSite: "Strict",
             maxAge: 3600 * 1000
         });
-        successMessage(res,`Hello ${req.userData.name}.`,200);
+        successMessage(res,`Welcome back ${req.userData.name}.`,200);
 
        
     } catch (error) {
