@@ -6,9 +6,8 @@ const crypto = require('crypto');
 const { validateEmail } = require("../utils/emailValidation");
 const { messages } = require("../utils/message");
 // const sendMessage = require("../utils/sendMessage");
-const {sendMessage}=require("../utils/nodemailer");
-const {successMessage} = require("../utils/sucessMessage");
-const { log } = require("console");
+const { sendMessage } = require("../utils/nodemailer");
+const { successMessage } = require("../utils/sucessMessage");
 
 
 
@@ -19,8 +18,8 @@ module.exports.getAllAdmin = async (req, res, next) => {
     try {
         const allAdmin = await admin.find({}, "-_id -password");//exclude _id and password
         // if there is no admin
-        if (!allAdmin || allAdmin.length===0)return next(new errorHandling("No Admin found in database.",404)); 
-        
+        if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
+
         res.status(200).json({
             totalAdmin: allAdmin.length,
             status: true,
@@ -54,7 +53,7 @@ module.exports.createAdmin = async (req, res, next) => {
             return next(new errorHandling("Password or confirm password does not match.Please try again.", 400));
 
         }
-        email=email.toLowerCase();
+        email = email.toLowerCase();
         // Create new admin in the database
         const newAdmin = await admin.create({
             name,
@@ -66,8 +65,8 @@ module.exports.createAdmin = async (req, res, next) => {
         // await newAdmin.save();  // Save the admin
 
         // Respond with success
-        successMessage(res, "Admin created successfully.",201);
-       
+        successMessage(res, "Admin created successfully.", 201);
+
     } catch (error) {
         // Catch validation errors or other errors
         if (error.name === "ValidationError") {
@@ -89,14 +88,14 @@ module.exports.createAdmin = async (req, res, next) => {
 
 // @method POST
 // @desc:controller to check if admin is deleted or not
-module.exports.checkIfDeleted=async(req,res,next)=>{
+module.exports.checkIfDeleted = async (req, res, next) => {
     try {
         let { email, password } = req.body;
         // if no email and password
         if (!email || !password) {
             return next(new errorHandling("Email or password is missing.Please try again.", 400));
         }
-        email=email.toLowerCase();
+        email = email.toLowerCase();
         // check email validation 
         if (!validateEmail(email)) {
             return next(new errorHandling("Please enter valid email address.", 400));
@@ -106,11 +105,11 @@ module.exports.checkIfDeleted=async(req,res,next)=>{
         const user = await admin.findOne({ email });
         // no data
         // console.log(user);
-        
+
         if (!user || user.isDeleted) {
             return next(new errorHandling("Cannot find the user from this email address.", 404));
         }
-        req.userData=user;
+        req.userData = user;
         // console.log(user)
         next();
     } catch (error) {
@@ -161,9 +160,9 @@ module.exports.login = async (req, res, next) => {
             sameSite: "Strict",
             maxAge: 3600 * 1000
         });
-        successMessage(res,`Welcome back ${req.userData.name}.`,200);
+        successMessage(res, `Welcome back ${req.userData.name}.`, 200);
 
-       
+
     } catch (error) {
 
         return next(new errorHandling(error.message, error.statusCode || 500));
@@ -217,7 +216,7 @@ module.exports.logout = (req, res, next) => {
             sameSite: "Strict"
         });
         successMessage(res, "You have been logged out.", 200);
-       
+
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
@@ -265,13 +264,13 @@ module.exports.updateAdmin = async (req, res, next) => {
         for (key in req.body) {
             // check the key macthes to the object of req.body
             if (details.includes(key)) {
-                if(key==="email"){
-                    req.body["email"]=req.body.email.toLowerCase();
+                if (key === "email") {
+                    req.body["email"] = req.body.email.toLowerCase();
                 }
                 updatedData[key] = req.body[key];
             }
         }
-        
+
         // update the data in databse
         const updateUser = await admin.findByIdAndUpdate(userId, updatedData);
         // no user
@@ -279,7 +278,7 @@ module.exports.updateAdmin = async (req, res, next) => {
             return next(new errorHandling("Cannot update data.Please try again.", 500));
         }
         successMessage(res, "Details updated successfully.", 200);
-       
+
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
@@ -292,14 +291,14 @@ module.exports.removeAdmin = async (req, res, next) => {
     try {
         const adminId = req.params.id;//from url
         if (!adminId) return next(new errorHandling("No admin admin id is provided please try again.", 400));
-        const del = await admin.findByIdAndUpdate(adminId,{isDeleted:true});
+        const del = await admin.findByIdAndUpdate(adminId, { isDeleted: true });
         // check if admin is deleted
         // if (!del) {
         if (!del) {
             throw new errorHandling("Failed to remove admin.Please try again.", 500);
         }
         successMessage(res, "Admin removed successfully.", 200);
-    
+
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
 
@@ -322,13 +321,13 @@ module.exports.forgotPassword = async (req, res, next) => {
         // check email in database
         const findMail = await admin.findOne({ email }, "-_id -password -code -resetExpiry");//exclude _id, password, code, and resetExpiry
         // no email
-        if (!findMail ) {
+        if (!findMail) {
             return next(new errorHandling("Email not found.Please enter correct email address.", 404));
         }
 
         //                               message part
         //generate  token
-        const passwordResetToken =  crypto.randomBytes(16).toString('hex');
+        const passwordResetToken = crypto.randomBytes(16).toString('hex');
 
         // Set expiration time (e.g., 1 hour from now)
         const expirationTime = Date.now() + 900000; // 15 minutes in milliseconds
@@ -343,10 +342,10 @@ module.exports.forgotPassword = async (req, res, next) => {
         const message = messages(resetLink);
 
         // send message
-        await sendMessage(res,findMail.email,"Reset link",message);
+        await sendMessage(res, findMail.email, "Reset link", message);
         // await sendMessage(next, message, "Reset link", findMail.email, findMail.name);
         successMessage(res, "Password reset email has been sent to your email address.", 200);
-      
+
     } catch (error) {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
