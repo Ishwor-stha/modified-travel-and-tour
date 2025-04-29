@@ -15,8 +15,8 @@ const cors = require('cors');
 const {preventHPP}=require("./utils/preventHpp");
 
 const corsOptions = {
-    // origin: process.env.URL,
-    origin:["http://localhost:5173","http://localhost:6000"],
+    origin: process.env.URL,
+    // origin:["http://localhost:5173","http://localhost:6000"],
     methods: ["GET", "POST","PATCH","DELETE"]
 }
 // loading environment variables from .env file
