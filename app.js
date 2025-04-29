@@ -37,7 +37,9 @@ app.use(cors(corsOptions));
 app.use(cookieParser());
 
 // Function to connect to the database
-databaseConnect();
+databaseConnect().catch(err=>{
+    app.use((req,res,next)=>next(err));
+});
 
 // Mount the tour route
 app.use("/api/", tourRoute);
