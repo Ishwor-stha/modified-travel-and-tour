@@ -1,5 +1,5 @@
 module.exports.successMessage = (res, message,statusCode) => {
-  res.status(200).json({
+  res.status(statusCode).json({
     success: true,
     message,
   });
