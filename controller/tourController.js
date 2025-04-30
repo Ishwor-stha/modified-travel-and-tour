@@ -36,6 +36,7 @@ module.exports.getTours = async (req, res, next) => {
             if (popularity) sort = popularity === "asc" ? 1 : -1;
 
         }
+        // iterate through query
         for (let keys in req.query) {
             if (fields.includes(keys)) {
                 if (keys === "active_month") {
