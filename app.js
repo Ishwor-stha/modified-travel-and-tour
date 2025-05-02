@@ -16,7 +16,6 @@ const {preventHPP}=require("./utils/preventHpp");
 
 const corsOptions = {
     origin:[process.env.URL1,process.env.URL2],
-    // origin:["http://localhost:5173","http://localhost:6000"],
     methods: ["GET", "POST","PATCH","DELETE"],
     credentials: true
 }
@@ -26,7 +25,7 @@ app.set('trust proxy', true);
 
 // Middleware to parse incoming JSON requests
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(express.json({limit: '10kb'}))//limiting the json body size to 10 kb
 //security 
