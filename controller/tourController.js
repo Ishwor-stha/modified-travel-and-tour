@@ -55,6 +55,7 @@ module.exports.getTours = async (req, res, next) => {
 
         // Fetching the data from the database using $or condition for flexible matching
         let tourQuery = Tour.find();
+        // console.log(condition)
 
         if (condition.length > 0) {
             // Use $or if any of the conditions are provided
@@ -274,16 +275,18 @@ module.exports.bookTour = async (req, res, next) => {
         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
         // destructring objects form req.body
 
-        const { firstName, lastName, date, phone, email, time, age } = req.body;
+        const { firstName, lastName, date, phone, secondPhone, email, time, age } = req.body;
         // if data is missing
-        if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
+        if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName ||!secondPhone) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
         const name = `${firstName} ${lastName}`;
         // email validation falils
         if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         //phone number validation fails
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandler("Please enter valid phone number.", 400));
+        if (!isValidNepaliPhoneNumber(secondPhone)) return next(new errorHandler("Please enter valid phone number.", 400));
+        if(phone===secondPhone)return next(new errorHandler("Phone number must be different in both field.",400));
         // create message 
-        const message = bookMessage(name, tourName, date, phone, email, time, age);
+        const message = bookMessage(name, tourName, date, phone,secondPhone, email, time, age);
         // send message to the email
         await sendMessage(res,process.env.personal_message_gmail,"Tour Booking Alert",message);
         // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");

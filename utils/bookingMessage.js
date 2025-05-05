@@ -1,4 +1,4 @@
-module.exports.bookMessage = (name, tourName, date, phone, email, time, age) => {
+module.exports.bookMessage = (name, tourName, date, phone,secondPhone, email, time, age) => {
     // Use Array.prototype.map and join for constructing age details
     const dispAge = Object.keys(age)
         .map(key => `\tAge range: ${key} = ${age[key]} People`)
@@ -7,7 +7,7 @@ module.exports.bookMessage = (name, tourName, date, phone, email, time, age) => 
     return `
      <div style="font-family: Arial, sans-serif; background-color: #f8f9fa; border-radius: 8px; padding: 20px; max-width: 600px; margin: 20px auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
          <div style="text-align: center; margin-bottom: 20px;">
-             <h2 style="color: #343a40; font-size: 24px; font-weight: bold; margin: 0;">📅 New Tour Booking Alert! 🌍</h2>
+             <h2 style="color: #343a40; font-size: 24px; font-weight: bold; margin: 0;">New Tour Booking Alert! </h2>
              <p style="font-size: 16px; color: #6c757d;">A customer has successfully booked a tour. Please find the details below.</p>
          </div>
  
@@ -22,6 +22,7 @@ module.exports.bookMessage = (name, tourName, date, phone, email, time, age) => 
                      <pre style="font-size: 16px; color: #333; white-space: pre-wrap; margin: 0;">${dispAge}</pre>
                  </li>
                  <li style="font-size: 18px; color: black; margin: 8px 0;"><strong>Contact Number:</strong> ${phone}</li>
+                 <li style="font-size: 18px; color: black; margin: 8px 0;"><strong> Secondary Contact Number:</strong> ${secondPhone}</li>
                  <li style="font-size: 18px; color: black; margin: 8px 0;"><strong>Email Address:</strong> <a href="mailto:${email}" style="color: #007bff;">${email}</a></li>
              </ul>
          </div>
