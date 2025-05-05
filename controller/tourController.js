@@ -285,8 +285,12 @@ module.exports.bookTour = async (req, res, next) => {
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandler("Please enter valid phone number.", 400));
         if (!isValidNepaliPhoneNumber(secondPhone)) return next(new errorHandler("Please enter valid phone number.", 400));
         if(phone===secondPhone)return next(new errorHandler("Phone number must be different in both field.",400));
+        const userDate=new Date(date)
+        const currentDate=new Date()
+        if(userDate<currentDate) return next(new errorHandler("Invalid booking date. Please select a future date.", 400));
         // create message 
         const message = bookMessage(name, tourName, date, phone,secondPhone, email, time, age);
+       
         // send message to the email
         await sendMessage(res,process.env.personal_message_gmail,"Tour Booking Alert",message);
         // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
