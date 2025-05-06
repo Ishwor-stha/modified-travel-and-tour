@@ -3,20 +3,13 @@ module.exports=(err,req,res,next)=>{
     const status = err.status || "false";      // Default to "error" if status is not set
     // console.log(process.env.NODE_ENV)
     // all the error details comes from the user through ../utils/error handling
-    if(process.env.NODE_ENV=="development"){
-        return res.status(statusCode).json({
-            status:status,
-            message:err.message,
-            detail:err.stack
+    return res.status(statusCode).json({
+        status:status,
+        message:err.message,
+        details:(process.env.NODE_ENV==="development")? err.stack :"Something went wrong.Please try again."
     
-        });
-
-    }else{
-        return res.status(err.statusCode).json({
-            status:err.status,
-            message:err.message ||"Something went wrong.Please try again."
-          
-        });
-    }
-    
+    });
+        
 }
+    
+
