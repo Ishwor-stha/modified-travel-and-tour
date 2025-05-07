@@ -27,7 +27,7 @@ const adminSchema = mongoose.Schema({
         type: String,
         required: [true, "Email is missing"],
         lowercase: true,
-        unique: [true, "Email is already in use"],
+        unique: [true,"This email is associated with an existing account. If you previously deleted your account, please contact support or try logging in."],
         validate: {
             validator: function (email) {
                 if (!validator.isEmail(email)) {
