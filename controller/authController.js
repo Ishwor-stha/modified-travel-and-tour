@@ -38,19 +38,24 @@ module.exports.getAllAdmin = async (req, res, next) => {
 }
 
 module.exports.getAdminByEmail = async (req, res, next) => {
+    
+    if(!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.",400))
     try {
         let details;
         if(req.query.email && ! validateEmail(req.query.email)){
             return next(new errorHandling("Invalid email address.Please use valid email address",400));
         }
-        const name=req.query.name;
+        
+        const checkName=req.query.name.split("{##$}")
+        // console.log(checkName)
+        if(checkName.length===1 && checkName[0]===" ")return next (new errorHandling("Invalid name.Please use valid name.",400))
+        const name=req.query.name.trim()
+        // console.log(name)
         if(req.query.email) {
             details=await admin.find({"email":req.query.email});
-
         }
-        if(req.query.name)details=await admin.find({"name":name});
-        if(!details)return next(new errorHandling(`No admin found by given ${req.body.email?"email": name}.`));
-        
+        if(req.query.name)details=await admin.find({ "name":  {$regex:new RegExp(`^${name}$`, 'i')} });
+        if(!details || Object.keys(details).length===0)return next(new errorHandling(`No admin found by given ${req.query.email?"email": "name"}.`,404));
         res.status(200).json({
             status: true,
             details
