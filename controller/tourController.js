@@ -307,20 +307,24 @@ module.exports.bookTour = async (req, res, next) => {
 // @method POST
 // @desc:controller to send a enquiry message to owner 
 // @endpoint:localhost:6000/api/ask-question
+// "contact2":"984555555",
 module.exports.enquiry = async (req, res, next) => {
     try {
         // destructring name,email,contact,message from req.body
-        const { firstName, lastName, email, contact, question } = req.body;
+        const { firstName, lastName, email, contact,contact2, question } = req.body;
         // if field is missing 
-        if (!firstName || !lastName || !email || !contact || !question) return next(new errorHandler("Some field is missing.Please fill up all the form.", 400));
+        if (!firstName || !lastName || !email || !contact || !question || !contact2) return next(new errorHandler("Some field is missing.Please fill up all the form.", 400));
         // check email if it is valid or not
         if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         // check phone number if it is valid or not
         if (!isValidNepaliPhoneNumber(contact)) return next(new errorHandler("Please enter valid phone number.", 400));
+        if (!isValidNepaliPhoneNumber(contact2)) return next(new errorHandler("Please enter valid phone number.", 400));
+        if(contact===contact2)return next(new errorHandler("The phone number must be different in both field.",400));
+
         // concat the first name and last name
         const name =` ${firstName } ${lastName}`;
         // create message template form enquiryMessage Function
-        const createMessage = enquiryMessage(name, email, contact, question);
+        const createMessage = enquiryMessage(name, email, contact,contact2, question);
         // Send message
         
         await sendMessage(res,process.env.NODEMAILER_USER,"Enquiry message",createMessage);//NOTE: ENTER THE REAL COMPANY EMAIL INSTEAD OF NODEMAILER USER.

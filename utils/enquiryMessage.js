@@ -1,4 +1,4 @@
-module.exports.enquiryMessage = (name, email, phone, question) => {
+module.exports.enquiryMessage = (name, email, phone, contact2, question) => {
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -41,6 +41,16 @@ module.exports.enquiryMessage = (name, email, phone, question) => {
         .details strong {
             color: #333;
         }
+        .message-box {
+            background-color: #f8f9fa;
+            border-left: 4px solid #007BFF;
+            padding: 10px 15px;
+            font-style: italic;
+            color: #555;
+            margin-top: 5px;
+            border-radius: 4px;
+            line-height: 1.5;
+        }
         .footer {
             background-color: #f1f1f1;
             padding: 10px;
@@ -61,11 +71,13 @@ module.exports.enquiryMessage = (name, email, phone, question) => {
                 <p><strong>Client Name:</strong> ${name}</p>
                 <p><strong>Email:</strong> ${email}</p>
                 <p><strong>Phone Number:</strong> ${phone}</p>
-                <p><strong>Question/Message:</strong><br>${question}</p>
+                <p><strong>Secondary Number:</strong> ${contact2}</p>
+                <p><strong>Question/Message:</strong></p>
+                <div class="message-box">${question}</div>
             </div>
         </div>
         <div class="footer">
-            <p>This is an automated notification. Please respond  to the client.</p>
+            <p>This is an automated notification. Please respond to the client.</p>
         </div>
     </div>
 </body>
