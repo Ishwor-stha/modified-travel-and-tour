@@ -37,6 +37,30 @@ module.exports.getAllAdmin = async (req, res, next) => {
     }
 }
 
+module.exports.getAdminByEmail = async (req, res, next) => {
+    try {
+        let details;
+        if(req.query.email && ! validateEmail(req.query.email)){
+            return next(new errorHandling("Invalid email address.Please use valid email address",400));
+        }
+        const name=req.query.name;
+        if(req.query.email) {
+            details=await admin.find({"email":req.query.email});
+
+        }
+        if(req.query.name)details=await admin.find({"name":name});
+        if(!details)return next(new errorHandling(`No admin found by given ${req.body.email?"email": name}.`));
+        
+        res.status(200).json({
+            status: true,
+            details
+        });
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
+
+    }
+}
+
 // @method POST
 // @desc:controller to create new admin
 // @endpoint: localhost:6000/admin/create-admin

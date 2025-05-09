@@ -1,10 +1,12 @@
 const express=require("express");
-const  {checkJwt,getAllAdmin,createAdmin,login,logout,updateAdmin,removeAdmin,forgotPassword,resetPassword,checkIfDeleted}  = require("../controller/authController");
+const  {checkJwt,getAllAdmin,createAdmin,login,logout,updateAdmin,removeAdmin,forgotPassword,resetPassword,checkIfDeleted,getAdminByEmail}  = require("../controller/authController");
 
 
 const Router=express.Router();
 
 Router.route("/get-admins").get(checkJwt,getAllAdmin);
+
+Router.route("/get-admin").get(checkJwt,getAdminByEmail)
 
 Router.route("/create-admin/").post(checkJwt,createAdmin);
 
