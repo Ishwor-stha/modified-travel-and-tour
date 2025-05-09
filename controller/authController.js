@@ -16,7 +16,12 @@ const { successMessage } = require("../utils/sucessMessage");
 // @endpoint: localhost:6000/admin/get-admins
 module.exports.getAllAdmin = async (req, res, next) => {
     try {
-        const allAdmin = await admin.find({}, "-_id -password");//exclude _id and password
+        let { page = 1 } = req.query;
+        page =  Math.ceil(page);
+        const limit=10;
+        const skip = (page - 1) *limit;
+
+        const allAdmin = await admin.find({}, "-_id -password").skip(skip).limit(limit);;//exclude _id and password
         // if there is no admin
         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
 
