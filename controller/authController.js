@@ -26,6 +26,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
 
         res.status(200).json({
+            pageNo:page,
             totalAdmin: allAdmin.length,
             status: true,
             allAdmin
