@@ -23,9 +23,10 @@ module.exports.createUser=async(req,res,next)=>{
                 continue;
             }
             data[key]=req.body[key];
-        }   
-
-        console.log(data)
+        }
+        // console.log(data)
+        const createUser=await User.create(data);
+        if(!createUser)return next(new errorHandling("Cannot create a user please try again later.",500));
         successMessage(res,`${req.body.name} created sucessfully`,200)
         
     } catch (error) {
