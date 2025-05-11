@@ -24,6 +24,7 @@ module.exports.createUser=async(req,res,next)=>{
             data[key]=req.body[key];
         }   
 
+        console.log(data)
         
         
     } catch (error) {

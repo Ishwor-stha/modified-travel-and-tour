@@ -5,6 +5,7 @@ const express = require("express");
 const {databaseConnect}=require("./utils/databaseConnect");
 
 const tourRoute = require("./route/tourRoute");
+const userRoute=require("./route/userRoute")
 const adminRoute = require("./route/adminRoute");
 const errorController = require('./controller/errorController');
 const {sanitize}=require("./utils/filter")
@@ -49,6 +50,8 @@ databaseConnect().catch(err=>{
 // Mount the tour route
 app.use("/api/", tourRoute);
 app.use("/api/admin/", adminRoute);
+app.use("/api/user/", userRoute);
+
 
 
 
