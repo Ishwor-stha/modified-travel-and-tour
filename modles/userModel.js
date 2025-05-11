@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const bcrypt = require("bcryptjs");
-const errorHandling = require('../utils/errorHandling');
 
 
 const userSchema = mongoose.Schema({
