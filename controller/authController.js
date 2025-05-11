@@ -8,6 +8,7 @@ const { messages } = require("../utils/message");
 // const sendMessage = require("../utils/sendMessage");
 const { sendMessage } = require("../utils/nodemailer");
 const { successMessage } = require("../utils/sucessMessage");
+const { doValidations } = require("../utils/doValidations");
 
 
 
@@ -74,19 +75,16 @@ module.exports.createAdmin = async (req, res, next) => {
             return next(new errorHandling("Password or confirm password is empty.Please try again.", 400));
         }
         // destructuring the fields from req.body
-        let { name, password, confirmPassword, email } = req.body;
+        let { name, password, confirmPassword, email,phone } = req.body;
+        if(!phone) return next(new errorHandling("Phone number is missing.Please check and try again.", 400));
         // no name and email
         if (!name || !email) {
             return next(new errorHandling("Name or Email is missing.Please check and try again.", 400));
         }
 
-
-        // Check if password and confirmPassword match
-        if (password !== confirmPassword) {
-            return next(new errorHandling("Password or confirm password does not match.Please try again.", 400));
-
-        }
         email = email.toLowerCase();
+         const message=doValidations(email,phone,password,confirmPassword);
+        if(message)return next(new errorHandling(message,400));
         // Create new admin in the database
         const newAdmin = await admin.create({
             name,
@@ -261,7 +259,7 @@ module.exports.logout = (req, res, next) => {
 module.exports.updateAdmin = async (req, res, next) => {
     try {
         const userId = req.user.userId;//from checkJwt controller
-        let details = ["name", "email", "password", "confirmPassword"];
+        let details = ["name", "email", "password", "confirmPassword","phone"];
         let updatedData = {};
 
         // 

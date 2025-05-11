@@ -14,15 +14,15 @@ const adminSchema = mongoose.Schema({
         minlength: [8, "A password must have a minimum of 8 characters"]
     },
     confirmPassword: {
-        type: String,
-        // required: [true, "Confirm Password is Missing"]
-        // validate: {
-        //     validator: function (value) {
-        //         return value === this.password; // Confirm password must match password
-        //     },
-        //     message: "Password and Confirm Password do not match"
-        // }
+        type: String
+       
     },
+    phone: {
+        type: String,
+        required: [true, "Phone number is required"],
+        match: [/^\d{10}$/, "Please enter a valid 10-digit phone number"],
+    },
+
     email: {
         type: String,
         required: [true, "Email is missing"],
