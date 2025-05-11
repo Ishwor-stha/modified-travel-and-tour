@@ -10,7 +10,6 @@ Router.route("/get-admin").get(checkJwt,getAdminByEmailOrName)
 
 Router.route("/create-admin/").post(checkJwt,createAdmin);
 
-
 Router.route("/login-admin/").post(checkIfDeleted,login);
 
 Router.route("/logout-admin/").delete(checkJwt,logout);

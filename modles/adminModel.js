@@ -41,6 +41,11 @@ const adminSchema = mongoose.Schema({
             message: "Please enter a valid email address"
         }
     },
+     role: {
+        type: String,
+        enum: "admin",
+        default: "admin"
+    },
     
     code: {
         resetToken: String
