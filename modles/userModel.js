@@ -47,13 +47,16 @@ const userSchema = mongoose.Schema({
 
     role: {
         type: String,
-        enum: "user",
+        enum: ["user","admin"],
         default: "user"
     },
     photo: {
         type: String
     },
-
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
     
     registration_date: {
         type: Date,
@@ -62,7 +65,7 @@ const userSchema = mongoose.Schema({
     code: {
         type: String
     },
-    code_expire: {
+    resetExpiry: {
         type: Number
     }
 

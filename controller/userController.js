@@ -4,10 +4,17 @@ const bcrypt = require("bcryptjs");
 const {doValidations}=require("../utils/doValidations")
 const { successMessage } = require("../utils/sucessMessage");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
+const user = require("../modles/userModel");
 
  
-// register
-module.exports.createUser=async(req,res,next)=>{
+
+// @method POST
+// @desc:controller to create new admin or user
+// @endpoint: localhost:6000/api/admin/create-admin
+//   or
+// @endpoint: localhost:6000/api/user/user-login
+
+module.exports.createUserAndAdmin=async(req,res,next)=>{
     try {
         if(!req.body || Object.keys(req.body).length===0)return next(new errorHandling("Empty body field please fill the form.",400));
         const requireFieds=["name","gender","phone","email","address","password","confirmPassword"];
@@ -16,6 +23,9 @@ module.exports.createUser=async(req,res,next)=>{
         const message=doValidations(req.body.email,req.body.phone,req.body.password,req.body.confirmPassword);
         if(message)return next(new errorHandling(message,400));
         const data={}
+        if(user.role==="admin" && req.originalUrl===process.env.adminCreateRoute){
+            data["role"]="admin"
+        }
         req.body["name"]=capaitlize(req.body.name)
         for(let key in requireFieds){
             key=requireFieds[key];
@@ -25,13 +35,17 @@ module.exports.createUser=async(req,res,next)=>{
                 continue;
             }
             data[key]=req.body[key];
+
         }
+        // console.log(req.originalUrl)
         // console.log(data)
         const createUser=await User.create(data);
         if(!createUser)return next(new errorHandling("Cannot create a user please try again later.",500));
         successMessage(res,`${req.body.name} created sucessfully`,200)
         
     } catch (error) {
+        // console.log(error)
+        if(error.code=== 11000) return next((new errorHandling("The email address is already in use.Please try to create with another email",error.statusCode||400)));
         return next((new errorHandling(error.message,error.statusCode||500)));
         
     }

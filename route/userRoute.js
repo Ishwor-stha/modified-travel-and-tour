@@ -1,6 +1,10 @@
 const express=require("express")
 const Router=express.Router();
-const {createUser}=require("../controller/userController");
-Router.route("/create-user").post(createUser)
+const {createUserAndAdmin}=require("../controller/userController");
+const {checkIfDeleted,login}=require("../controller/loginController")
+const {checkJwt}=require("../middlewares/checkjwt")
+
+Router.route("/create-user").post(createUserAndAdmin)
+Router.route("/user-login").post(checkIfDeleted,login)
 
 module.exports=Router;
