@@ -3,6 +3,7 @@ const errorHandling = require("../utils/errorHandling");
 const bcrypt = require("bcryptjs");
 const {doValidations}=require("../utils/doValidations")
 const { successMessage } = require("../utils/sucessMessage");
+const { capaitlize } = require("../utils/capitalizedFirstLetter");
 
  
 // register
@@ -15,6 +16,7 @@ module.exports.createUser=async(req,res,next)=>{
         const message=doValidations(req.body.email,req.body.phone,req.body.password,req.body.confirmPassword);
         if(message)return next(new errorHandling(message,400));
         const data={}
+        req.body["name"]=capaitlize(req.body.name)
         for(let key in requireFieds){
             key=requireFieds[key];
             if(key==="confirmPassword")continue;
