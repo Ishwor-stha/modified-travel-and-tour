@@ -8,9 +8,9 @@ const { messages } = require("../utils/message");
 // const sendMessage = require("../utils/sendMessage");
 const { sendMessage } = require("../utils/nodemailer");
 const { successMessage } = require("../utils/sucessMessage");
-const { doValidations } = require("../utils/doValidations");
-const { capaitlize } = require("../utils/capitalizedFirstLetter");
-
+// const { doValidations } = require("../utils/doValidations");
+// const { capaitlize } = require("../utils/capitalizedFirstLetter");
+const User=require("../modles/userModel");
 
 
 // @method GET
@@ -41,7 +41,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
 module.exports.getAdminByEmailOrName = async (req, res, next) => {
 
-    if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400))
+    if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
     try {
         let details;
         if (req.query.email) {
@@ -68,29 +68,7 @@ module.exports.getAdminByEmailOrName = async (req, res, next) => {
 
 
 
-// // @method POST
-// // @desc:controller to check cookies
-// module.exports.checkJwt = (req, res, next) => {
-//     try {
-//         const token = req.cookies.auth_token;
-//         // no token
-//         if (!token) {
-//             return next(new errorHandling("Please login and try again.", 403));
 
-//         }
-//         // check token
-//         jwt.verify(token, process.env.SECRETKEY, (err, decode) => {
-//             if (err) {
-//                 return next(new errorHandling("Your session has been expired.Please login again. ", 403));
-//             }
-//             req.user = decode;
-
-//             next();
-//         })
-//     } catch (error) {
-//         return next(new errorHandling(error.message, 500));
-//     }
-// }
 
 // @method DELETE
 // @desc:controller delete cookie from the user
@@ -118,70 +96,6 @@ module.exports.logout = (req, res, next) => {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
 }
-
-// @method patch
-// @desc:controller to create update admin
-// @endpoint: localhost:6000/admin/create-admin
-// module.exports.updateAdmin = async (req, res, next) => {
-//     try {
-//         const userId = req.user.userId;//from checkJwt controller
-//         let details = ["name", "email", "password", "confirmPassword","phone"];
-//         let updatedData = {};
-
-//         // 
-//         if (req.body.email) {
-//             //validate email 
-//             if (!validateEmail(req.body.email)) {
-//                 return next(new errorHandling("Email is not valid .Please enter valid email address.", 400));
-//             }
-
-//         }
-
-//         if (req.body.password) {
-//             // validate password
-//             if (!req.body.password || !req.body.confirmPassword) {
-//                 return next(new errorHandling("Confirm password of password is missing.Please try again.", 400));
-//             }
-//             // compare password
-//             if (req.body.password !== req.body.confirmPassword) {
-
-//                 return next(new errorHandling("Confirm Password or Password doesnot match.Please try again.", 400));
-
-
-//             }
-//             // create password hash
-//             const salt = await bcrypt.genSalt(10);
-//             req.body.password = await bcrypt.hash(req.body.password, salt);
-//             req.body.confirmPassword = undefined;
-
-//         }
-
-
-//         // itereate every object of req.body
-//         for (key in req.body) {
-//             // check the key macthes to the object of req.body
-//             if (details.includes(key)) {
-//                 if (key === "email") {
-//                     req.body["email"] = req.body.email.toLowerCase();
-//                 }
-//                 if(key==="name"){
-//                     req.body[key]=capaitlize(req.body[key]);
-//                 }
-//                 updatedData[key] = req.body[key];
-//             }
-//         }
-
-//         // update the data in databse
-//         const updateUser = await admin.findByIdAndUpdate(userId, updatedData);
-//         // no user
-//         if (!updateUser) {
-//             return next(new errorHandling("Cannot update data.Please try again.", 500));
-//         }
-//         successMessage(res, "Details updated successfully.", 200);
-
-//     } catch (error) {
-//         return next(new errorHandling(error.message, error.statusCode || 500));
-//     }
 
 // }
 // @method delete
@@ -219,7 +133,7 @@ module.exports.forgotPassword = async (req, res, next) => {
             return next(new errorHandling("Please enter valid email address.", 400));
         }
         // check email in database
-        const findMail = await admin.findOne({ email }, "-_id -password -code -resetExpiry");//exclude _id, password, code, and resetExpiry
+        const findMail = await User.findOne({ email }, "-_id -password -code -resetExpiry");//exclude _id, password, code, and resetExpiry
         // no email
         if (!findMail) {
             return next(new errorHandling("Email not found.Please enter correct email address.", 404));
@@ -232,12 +146,14 @@ module.exports.forgotPassword = async (req, res, next) => {
         // Set expiration time (e.g., 1 hour from now)
         const expirationTime = Date.now() + 900000; // 15 minutes in milliseconds
         // update code and expiry time
-        const updatedAdmin = await admin.findByIdAndUpdate(findMail._id, { "code": passwordResetToken, "resetExpiry": expirationTime });
-        if (!updatedAdmin) {
+        const updatedUser = await User.findByIdAndUpdate(findMail._id, { "code": passwordResetToken, "resetExpiry": expirationTime });
+        if (!updatedUser) {
             return next(new errorHandling("Failed to update reset token. Admin not found.", 404));
         }
         // Create the reset link
-        const resetLink = `${process.env.URL}/admin/reset-password/${passwordResetToken}`;
+        let resetLink
+        if(findMail.role=="admin") resetLink = `${process.env.URL}/admin/reset-password/${passwordResetToken}`;
+        else resetLink = `${process.env.URL}/user/reset-password/${passwordResetToken}`;
         // Construct the email message
         const message = messages(resetLink);
 

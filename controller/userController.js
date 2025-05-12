@@ -7,10 +7,6 @@ const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const user = require("../modles/userModel");
 const jwt=require("jsonwebtoken");
 
-const passwordCheck=(password)=>{
-    check=bcrypt.compare(password,10)
-    
-}
 
 // @method POST
 // @desc:controller to create new admin or user
@@ -27,7 +23,8 @@ module.exports.createUserAndAdmin = async (req, res, next) => {
         const message = doValidations(req.body.email, req.body.phone, req.body.password, req.body.confirmPassword);
         if (message) return next(new errorHandling(message, 400));
         const data = {}
-        if (user.role === "admin" && req.originalUrl === process.env.adminCreateRoute) {
+        
+        if (req.user.role === "admin" && req.originalUrl === process.env.adminCreateRoute) {
             data["role"] = "admin"
         }
         req.body["name"] = capaitlize(req.body.name)
@@ -88,7 +85,37 @@ module.exports.updateUserOrAdmin = async (req, res, next) => {
         return next(new errorHandling(error.message, error.statusCode || 500))
     }
 }
-// update
+// @method delete
+// @desc:controller to delete new admin
+// @endpoint: localhost:6000/admin/delete-admin
+module.exports.deleteAdminOrUser = async (req, res, next) => {
+    try {
+       const userId = req.user.userId;//from checkJwt controller
+        if (!userId) return next(new errorHandling("Something went wrong.", 400));
+        if(!req.body)return next(new errorHandling("Please provide currentPassword.", 400));
+        if(!req.body.currentPassword || req.body["currentPassword"].trim()===""  )return next(new errorHandling("Please enter current password to delete your account.",400));
+        
+        const checkPass=await User.findById(userId,"+password +name")
+        const check=await bcrypt.compare(req.body.currentPassword, checkPass.password);
+        if(!check)return next(new errorHandling("Password doesnot match.",400));
+        const del = await User.findByIdAndUpdate(userId, { isDeleted: true });
+        // check if admin is deleted
+        // if (!del) {
+        if (!del) {
+            throw new errorHandling("Failed to remove admin.Please try again.", 500);
+        }
+          res.clearCookie('auth_token', {
+            httpOnly: true,
+            sameSite: "Strict"
+        });
+        successMessage(res, `${capaitlize(del.role)}removed successfully.`, 200);
+
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
+
+    }
+
+}
 // forgot
 // reset
-// delete
+
