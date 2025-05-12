@@ -1,5 +1,4 @@
 const errorHandling = require("../utils/errorHandling");
-const admin = require("../modles/adminModel");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require('crypto');
@@ -16,55 +15,57 @@ const User=require("../modles/userModel");
 // @method GET
 // @desc:controller to get all admin
 // @endpoint: localhost:6000/admin/get-admins
-module.exports.getAllAdmin = async (req, res, next) => {
-    try {
-        let { page = 1 } = req.query;
-        page = Math.ceil(page);
-        const limit = 10;
-        const skip = (page - 1) * limit;
+// module.exports.getAllAdmin = async (req, res, next) => {
+//     try {
+//         let { page = 1 } = req.query;
+//         page = Math.ceil(page);
+//         const limit = 10;
+//         const skip = (page - 1) * limit;
 
-        const allAdmin = await admin.find({}, "-_id -password").skip(skip).limit(limit);;//exclude _id and password
-        // if there is no admin
-        if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
+//         const allAdmin = await User.find({}, "-_id -password").skip(skip).limit(limit);;//exclude _id and password
+//         // if there is no admin
+//         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
 
-        res.status(200).json({
-            pageNo: page,
-            totalAdmin: allAdmin.length,
-            status: true,
-            allAdmin
-        });
-    } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+//         res.status(200).json({
+//             pageNo: page,
+//             totalAdmin: allAdmin.length,
+//             status: true,
+//             allAdmin
+//         });
+//     } catch (error) {
+//         return next(new errorHandling(error.message, error.statusCode || 500));
 
-    }
-}
+//     }
+// }
 
-module.exports.getAdminByEmailOrName = async (req, res, next) => {
 
-    if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
-    try {
-        let details;
-        if (req.query.email) {
-            if(!validateEmail(req.query.email))return next(new errorHandling("Invalid email address.Please use valid email address", 400));
-            details = await admin.find({ "email": req.query.email });
-        }
-        if (req.query.name) {
-            const checkName = req.query.name.split("{##$}");
-            // console.log(checkName)
-            if (checkName.length === 1 && checkName[0] === " ") return next(new errorHandling("Invalid name.Please use valid name.", 400))
-            const name = req.query.name.trim()
-            details = await admin.find({ "name": { $regex: new RegExp(`^${name}$`, 'i') } });
-        }
-        if (!details || Object.keys(details).length === 0) return next(new errorHandling(`No admin found by given ${req.query.email ? "email" : "name"}.`, 404));
-        res.status(200).json({
-            status: true,
-            details
-        });
-    } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
 
-    }
-}
+// module.exports.getAdminByEmailOrName = async (req, res, next) => {
+
+//     if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
+//     try {
+//         let details;
+//         if (req.query.email) {
+//             if(!validateEmail(req.query.email))return next(new errorHandling("Invalid email address.Please use valid email address", 400));
+//             details = await admin.find({ "email": req.query.email });
+//         }
+//         if (req.query.name) {
+//             const checkName = req.query.name.split("{##$}");
+//             // console.log(checkName)
+//             if (checkName.length === 1 && checkName[0] === " ") return next(new errorHandling("Invalid name.Please use valid name.", 400))
+//             const name = req.query.name.trim()
+//             details = await admin.find({ "name": { $regex: new RegExp(`^${name}$`, 'i') } });
+//         }
+//         if (!details || Object.keys(details).length === 0) return next(new errorHandling(`No admin found by given ${req.query.email ? "email" : "name"}.`, 404));
+//         res.status(200).json({
+//             status: true,
+//             details
+//         });
+//     } catch (error) {
+//         return next(new errorHandling(error.message, error.statusCode || 500));
+
+//     }
+// }
 
 
 
@@ -101,24 +102,24 @@ module.exports.logout = (req, res, next) => {
 // @method delete
 // @desc:controller to delete new admin
 // @endpoint: localhost:6000/admin/delete-admin
-module.exports.removeAdmin = async (req, res, next) => {
-    try {
-        const adminId = req.params.id;//from url
-        if (!adminId) return next(new errorHandling("No admin admin id is provided please try again.", 400));
-        const del = await admin.findByIdAndUpdate(adminId, { isDeleted: true });
-        // check if admin is deleted
-        // if (!del) {
-        if (!del) {
-            throw new errorHandling("Failed to remove admin.Please try again.", 500);
-        }
-        successMessage(res, "Admin removed successfully.", 200);
+// module.exports.removeAdmin = async (req, res, next) => {
+//     try {
+//         const adminId = req.params.id;//from url
+//         if (!adminId) return next(new errorHandling("No admin admin id is provided please try again.", 400));
+//         const del = await admin.findByIdAndUpdate(adminId, { isDeleted: true });
+//         // check if admin is deleted
+//         // if (!del) {
+//         if (!del) {
+//             throw new errorHandling("Failed to remove admin.Please try again.", 500);
+//         }
+//         successMessage(res, "Admin removed successfully.", 200);
 
-    } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+//     } catch (error) {
+//         return next(new errorHandling(error.message, error.statusCode || 500));
 
-    }
+//     }
 
-}
+// }
 
 // @endpoint:localhost:6000/admin/forget-password
 // @desc:forget password also send gmail

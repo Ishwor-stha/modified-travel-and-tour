@@ -4,8 +4,7 @@ const bcrypt = require("bcryptjs");
 const { doValidations } = require("../utils/doValidations")
 const { successMessage } = require("../utils/sucessMessage");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
-const user = require("../modles/userModel");
-const jwt=require("jsonwebtoken");
+// const jwt=require("jsonwebtoken");
 
 
 // @method POST

@@ -1,4 +1,3 @@
-const adminModel = require("../modles/adminModel");
 const { validateEmail } = require("../utils/emailValidation");
 const errorHandling = require("../utils/errorHandling");
 const userModel=require("../modles/userModel");

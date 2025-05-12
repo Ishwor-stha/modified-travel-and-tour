@@ -7,9 +7,9 @@ const {checkJwt}=require("../middlewares/checkjwt")
 
 const Router=express.Router();
 
-Router.route("/get-admins").get(checkJwt,getAllAdmin);
+// Router.route("/get-admins").get(checkJwt,getAllAdmin);
 
-Router.route("/get-admin").get(checkJwt,getAdminByEmailOrName)
+// Router.route("/get-admin").get(checkJwt,getAdminByEmailOrName)
 
 Router.route("/create-admin/").post(checkJwt,createUserAndAdmin);
 
@@ -19,7 +19,7 @@ Router.route("/logout-admin/").delete(checkJwt,logout);
 
 Router.route("/update-admin/").patch(checkJwt, updateUserOrAdmin);
 
-Router.route("/remove-admin/:id").delete(checkJwt, removeAdmin);
+// Router.route("/remove-admin/:id").delete(checkJwt, removeAdmin);
 
 Router.route("/delete-account").delete(checkJwt,deleteAdminOrUser)
 
