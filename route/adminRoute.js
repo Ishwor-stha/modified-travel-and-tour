@@ -1,7 +1,7 @@
 const express=require("express");
 const  {getAllAdmin,logout,updateAdmin,removeAdmin,forgotPassword,resetPassword,getAdminByEmailOrName}  = require("../controller/authController");
 const {checkIfDeleted,login}=require("../controller/loginController")
-const {createUserAndAdmin}=require("../controller/userController")
+const {createUserAndAdmin,updateUserOrAdmin}=require("../controller/userController")
 const {checkJwt}=require("../middlewares/checkjwt")
 
 
@@ -17,7 +17,7 @@ Router.route("/login-admin/").post(checkIfDeleted,login);
 
 Router.route("/logout-admin/").delete(checkJwt,logout);
 
-Router.route("/update-admin/").patch(checkJwt, updateAdmin);
+Router.route("/update-admin/").patch(checkJwt, updateUserOrAdmin);
 
 Router.route("/remove-admin/:id").delete(checkJwt, removeAdmin);
 

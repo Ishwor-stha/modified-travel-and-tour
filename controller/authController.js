@@ -68,29 +68,29 @@ module.exports.getAdminByEmailOrName = async (req, res, next) => {
 
 
 
-// @method POST
-// @desc:controller to check cookies
-module.exports.checkJwt = (req, res, next) => {
-    try {
-        const token = req.cookies.auth_token;
-        // no token
-        if (!token) {
-            return next(new errorHandling("Please login and try again.", 403));
+// // @method POST
+// // @desc:controller to check cookies
+// module.exports.checkJwt = (req, res, next) => {
+//     try {
+//         const token = req.cookies.auth_token;
+//         // no token
+//         if (!token) {
+//             return next(new errorHandling("Please login and try again.", 403));
 
-        }
-        // check token
-        jwt.verify(token, process.env.SECRETKEY, (err, decode) => {
-            if (err) {
-                return next(new errorHandling("Your session has been expired.Please login again. ", 403));
-            }
-            req.user = decode;
+//         }
+//         // check token
+//         jwt.verify(token, process.env.SECRETKEY, (err, decode) => {
+//             if (err) {
+//                 return next(new errorHandling("Your session has been expired.Please login again. ", 403));
+//             }
+//             req.user = decode;
 
-            next();
-        })
-    } catch (error) {
-        return next(new errorHandling(error.message, 500));
-    }
-}
+//             next();
+//         })
+//     } catch (error) {
+//         return next(new errorHandling(error.message, 500));
+//     }
+// }
 
 // @method DELETE
 // @desc:controller delete cookie from the user
@@ -122,68 +122,68 @@ module.exports.logout = (req, res, next) => {
 // @method patch
 // @desc:controller to create update admin
 // @endpoint: localhost:6000/admin/create-admin
-module.exports.updateAdmin = async (req, res, next) => {
-    try {
-        const userId = req.user.userId;//from checkJwt controller
-        let details = ["name", "email", "password", "confirmPassword","phone"];
-        let updatedData = {};
+// module.exports.updateAdmin = async (req, res, next) => {
+//     try {
+//         const userId = req.user.userId;//from checkJwt controller
+//         let details = ["name", "email", "password", "confirmPassword","phone"];
+//         let updatedData = {};
 
-        // 
-        if (req.body.email) {
-            //validate email 
-            if (!validateEmail(req.body.email)) {
-                return next(new errorHandling("Email is not valid .Please enter valid email address.", 400));
-            }
+//         // 
+//         if (req.body.email) {
+//             //validate email 
+//             if (!validateEmail(req.body.email)) {
+//                 return next(new errorHandling("Email is not valid .Please enter valid email address.", 400));
+//             }
 
-        }
+//         }
 
-        if (req.body.password) {
-            // validate password
-            if (!req.body.password || !req.body.confirmPassword) {
-                return next(new errorHandling("Confirm password of password is missing.Please try again.", 400));
-            }
-            // compare password
-            if (req.body.password !== req.body.confirmPassword) {
+//         if (req.body.password) {
+//             // validate password
+//             if (!req.body.password || !req.body.confirmPassword) {
+//                 return next(new errorHandling("Confirm password of password is missing.Please try again.", 400));
+//             }
+//             // compare password
+//             if (req.body.password !== req.body.confirmPassword) {
 
-                return next(new errorHandling("Confirm Password or Password doesnot match.Please try again.", 400));
-
-
-            }
-            // create password hash
-            const salt = await bcrypt.genSalt(10);
-            req.body.password = await bcrypt.hash(req.body.password, salt);
-            req.body.confirmPassword = undefined;
-
-        }
+//                 return next(new errorHandling("Confirm Password or Password doesnot match.Please try again.", 400));
 
 
-        // itereate every object of req.body
-        for (key in req.body) {
-            // check the key macthes to the object of req.body
-            if (details.includes(key)) {
-                if (key === "email") {
-                    req.body["email"] = req.body.email.toLowerCase();
-                }
-                if(key==="name"){
-                    req.body[key]=capaitlize(req.body[key]);
-                }
-                updatedData[key] = req.body[key];
-            }
-        }
+//             }
+//             // create password hash
+//             const salt = await bcrypt.genSalt(10);
+//             req.body.password = await bcrypt.hash(req.body.password, salt);
+//             req.body.confirmPassword = undefined;
 
-        // update the data in databse
-        const updateUser = await admin.findByIdAndUpdate(userId, updatedData);
-        // no user
-        if (!updateUser) {
-            return next(new errorHandling("Cannot update data.Please try again.", 500));
-        }
-        successMessage(res, "Details updated successfully.", 200);
+//         }
 
-    } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
-    }
 
-}
+//         // itereate every object of req.body
+//         for (key in req.body) {
+//             // check the key macthes to the object of req.body
+//             if (details.includes(key)) {
+//                 if (key === "email") {
+//                     req.body["email"] = req.body.email.toLowerCase();
+//                 }
+//                 if(key==="name"){
+//                     req.body[key]=capaitlize(req.body[key]);
+//                 }
+//                 updatedData[key] = req.body[key];
+//             }
+//         }
+
+//         // update the data in databse
+//         const updateUser = await admin.findByIdAndUpdate(userId, updatedData);
+//         // no user
+//         if (!updateUser) {
+//             return next(new errorHandling("Cannot update data.Please try again.", 500));
+//         }
+//         successMessage(res, "Details updated successfully.", 200);
+
+//     } catch (error) {
+//         return next(new errorHandling(error.message, error.statusCode || 500));
+//     }
+
+// }
 // @method delete
 // @desc:controller to delete new admin
 // @endpoint: localhost:6000/admin/delete-admin

@@ -9,7 +9,7 @@ module.exports.checkJwt = (req, res, next) => {
         const token = req.cookies.auth_token;
         // no token
         if (!token) {
-            return next(new errorHandlingndling("Please login and try again.", 403));
+            return next(new errorHandling("Please login and try again.", 403));
 
         }
         // check token

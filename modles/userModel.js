@@ -6,14 +6,18 @@ const userSchema = mongoose.Schema({
     name: {
         type: String,
         required: [true, " Name is Required"],
-        maxlength: [50, "User name must not exceed 50 characters"]
+        maxlength: [50, "User name must not exceed 50 characters"],
+        trim: true
+
     },
 
    
     gender: {
         type: String,
         enum: ['Male', 'Female', 'Other','male', 'female', 'other'],  
-        required: [true, "Gender is required"]
+        required: [true, "Gender is required"],
+        trim: true
+
     },
 
     
@@ -21,6 +25,7 @@ const userSchema = mongoose.Schema({
         type: String,
         required: [true, "Phone number is required"],
         match: [/^\d{10}$/, "Please enter a valid 10-digit phone number"],
+        trim: true
     },
 
     email: {

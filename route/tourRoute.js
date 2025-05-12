@@ -2,7 +2,7 @@ const express = require("express");
 // const upload = require("../utils/multer.js");
 const Router = express.Router();
 const {postTour,updateTour,deleteTour,getOneTour,bookTour,enquiry,getTours} = require("../controller/tourController.js");
-const { checkJwt } = require("../controller/authController.js");
+const { checkJwt } = require("../middlewares/checkjwt.js");
 
 /*********************************Route****************************************************** */
 Router.route("/get-tours").get(getTours);
