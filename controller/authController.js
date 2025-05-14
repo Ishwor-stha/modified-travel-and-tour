@@ -28,11 +28,8 @@ module.exports.getAllAdmin = async (req, res, next) => {
         const limit = 10;
         const skip = (page - 1) * limit;
         let trueOrFalse
-        if(req.query.isDeleted==="true")isDeleted=true;
-        else trueOrFalse=false
-        
-        // if(req.query.isDeleted)
-
+        if(req.query.isDeleted==="true")trueOrFalse=true;
+        else trueOrFalse=false; 
         const allAdmin = await User.find({role:"admin",isDeleted:trueOrFalse}, "-_id -password").skip(skip).limit(limit);;//exclude _id and password
         // if there is no admin
         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
