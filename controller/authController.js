@@ -11,32 +11,43 @@ const { successMessage } = require("../utils/sucessMessage");
 // const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const User=require("../modles/userModel");
 
+const restrict=(role,urlFromClient,validUrl)=>{
+    const onlyUrl=urlFromClient.split("?")[0]
+    return role==="admin"&& onlyUrl===validUrl
+}
 
 // @method GET
 // @desc:controller to get all admin
 // @endpoint: localhost:6000/admin/get-admins
-// module.exports.getAllAdmin = async (req, res, next) => {
-//     try {
-//         let { page = 1 } = req.query;
-//         page = Math.ceil(page);
-//         const limit = 10;
-//         const skip = (page - 1) * limit;
+module.exports.getAllAdmin = async (req, res, next) => {
+    try { 
+        if(!restrict(req.user.role,req.originalUrl,process.env.adminGetRoute))return next(new errorHandling("You donot have permission to perform this task.", 400));
+       
+        let { page = 1 } = req.query;
+        page = Math.ceil(page);
+        const limit = 10;
+        const skip = (page - 1) * limit;
+        let trueOrFalse
+        if(req.query.isDeleted==="true")isDeleted=true;
+        else trueOrFalse=false
+        
+        // if(req.query.isDeleted)
 
-//         const allAdmin = await User.find({}, "-_id -password").skip(skip).limit(limit);;//exclude _id and password
-//         // if there is no admin
-//         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
+        const allAdmin = await User.find({role:"admin",isDeleted:trueOrFalse}, "-_id -password").skip(skip).limit(limit);;//exclude _id and password
+        // if there is no admin
+        if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
 
-//         res.status(200).json({
-//             pageNo: page,
-//             totalAdmin: allAdmin.length,
-//             status: true,
-//             allAdmin
-//         });
-//     } catch (error) {
-//         return next(new errorHandling(error.message, error.statusCode || 500));
+        res.status(200).json({
+            pageNo: page,
+            totalAdmin: allAdmin.length,
+            status: true,
+            allAdmin
+        });
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
 
-//     }
-// }
+    }
+}
 
 
 

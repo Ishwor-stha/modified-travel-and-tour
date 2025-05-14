@@ -7,9 +7,10 @@ const {checkJwt}=require("../middlewares/checkjwt")
 
 const Router=express.Router();
 
-// Router.route("/get-admins").get(checkJwt,getAllAdmin);
+Router.route("/get-admins").get(checkJwt,getAllAdmin);
 
 // Router.route("/get-admin").get(checkJwt,getAdminByEmailOrName)
+
 
 Router.route("/create-admin/").post(checkJwt,createUserAndAdmin);
 
