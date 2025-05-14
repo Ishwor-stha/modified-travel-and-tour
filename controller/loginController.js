@@ -18,19 +18,12 @@ module.exports.checkIfDeleted = async (req, res, next) => {
         // check email validation 
         if (!validateEmail(email)) {
             return next(new errorHandling("Please enter valid email address.", 400));
-        }
-        
-        
+        }  
             
+        // fetch data from email
         const user = await userModel.findOne({ email });
         
-        // console.log(user)
-        // console.log(req.originalUrl===process.env.adminLoginRoute)
-        // console.log(req.originalUrl)
-        // // fetch data from email
         // no data
-        // console.log(user);
-
         if (!user || user.isDeleted) {
             return next(new errorHandling("Cannot find the user from this email address.", 404));
         }
@@ -41,29 +34,13 @@ module.exports.checkIfDeleted = async (req, res, next) => {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
 }
+
+
 // @method POST
 // @desc:controller to login
 // @endpoint: localhost:6000/admin/login-admin
 module.exports.login = async (req, res, next) => {
-    try {
-        // destrcturing
-        // let { email, password } = req.body;
-        // // if no email and password
-        // if (!email || !password) {
-        //     return next(new errorHandling("Email or password is missing.Please try again.", 400));
-        // }
-
-        // // check email validation 
-        // if (!validateEmail(email)) {
-        //     return next(new errorHandling("Please enter valid email address.", 400));
-        // }
-
-        // fetch data from email
-        // const user = await admin.findOne({ email });
-        // // no data
-        // if (!user) {
-        //     return next(new errorHandling("Cannot find the user from this email address.", 404));
-        // }
+    try { 
         // compare password
         const isMatch = await bcrypt.compare(req.body.password, req.userData.password);
         // match fails
