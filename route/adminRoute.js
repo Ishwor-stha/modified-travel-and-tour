@@ -1,5 +1,5 @@
 const express=require("express");
-const  {getAllAdmin,logout,removeAdmin,forgotPassword,resetPassword,getAdminByEmailOrName}  = require("../controller/authController");
+const  {getAllAdmin,logout,removeAdmin,forgotPassword,resetPassword,getAdminAndUserByEmailOrName}  = require("../controller/authController");
 const {checkIfDeleted,login}=require("../controller/loginController")
 const {createUserAndAdmin,updateUserOrAdmin,deleteAdminOrUser}=require("../controller/userController")
 const {checkJwt}=require("../middlewares/checkjwt")
@@ -9,7 +9,7 @@ const Router=express.Router();
 
 Router.route("/get-admins").get(checkJwt,getAllAdmin);
 
-// Router.route("/get-admin").get(checkJwt,getAdminByEmailOrName)
+Router.route("/get").get(checkJwt,getAdminAndUserByEmailOrName)
 
 
 Router.route("/create-admin/").post(checkJwt,createUserAndAdmin);

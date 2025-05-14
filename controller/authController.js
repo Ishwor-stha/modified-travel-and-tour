@@ -9,28 +9,28 @@ const { sendMessage } = require("../utils/nodemailer");
 const { successMessage } = require("../utils/sucessMessage");
 // const { doValidations } = require("../utils/doValidations");
 // const { capaitlize } = require("../utils/capitalizedFirstLetter");
-const User=require("../modles/userModel");
+const User = require("../modles/userModel");
 
-const restrict=(role,urlFromClient,validUrl)=>{
-    const onlyUrl=urlFromClient.split("?")[0]
-    return role==="admin"&& onlyUrl===validUrl
+const restrict = (role, urlFromClient, validUrl) => {
+    const onlyUrl = urlFromClient.split("?")[0]
+    return role === "admin" && onlyUrl === validUrl
 }
 
 // @method GET
 // @desc:controller to get all admin
 // @endpoint: localhost:6000/admin/get-admins
 module.exports.getAllAdmin = async (req, res, next) => {
-    try { 
-        if(!restrict(req.user.role,req.originalUrl,process.env.adminGetRoute))return next(new errorHandling("You donot have permission to perform this task.", 400));
-       
+    try {
+        if (!restrict(req.user.role, req.originalUrl, process.env.adminGetRoute)) return next(new errorHandling("You donot have permission to perform this task.", 400));
+
         let { page = 1 } = req.query;
         page = Math.ceil(page);
         const limit = 10;
         const skip = (page - 1) * limit;
         let trueOrFalse
-        if(req.query.isDeleted==="true")trueOrFalse=true;
-        else trueOrFalse=false; 
-        const allAdmin = await User.find({role:"admin",isDeleted:trueOrFalse}, "-_id -password").skip(skip).limit(limit);;//exclude _id and password
+        if (req.query.isDeleted === "true") trueOrFalse = true;
+        else trueOrFalse = false;
+        const allAdmin = await User.find({ role: "admin", isDeleted: trueOrFalse }, "-_id -password -role -isDeleted").skip(skip).limit(limit);;//exclude _id and password ....
         // if there is no admin
         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
 
@@ -48,32 +48,41 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
 
 
-// module.exports.getAdminByEmailOrName = async (req, res, next) => {
+module.exports.getAdminAndUserByEmailOrName = async (req, res, next) => {
+ 
+    try {
+        if (!restrict(req.user.role, req.originalUrl, process.env.validRouteToGetByNameOrEmail)) return next(new errorHandling("You donot have permission to perform this task.", 400));
 
-//     if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
-//     try {
-//         let details;
-//         if (req.query.email) {
-//             if(!validateEmail(req.query.email))return next(new errorHandling("Invalid email address.Please use valid email address", 400));
-//             details = await admin.find({ "email": req.query.email });
-//         }
-//         if (req.query.name) {
-//             const checkName = req.query.name.split("{##$}");
-//             // console.log(checkName)
-//             if (checkName.length === 1 && checkName[0] === " ") return next(new errorHandling("Invalid name.Please use valid name.", 400))
-//             const name = req.query.name.trim()
-//             details = await admin.find({ "name": { $regex: new RegExp(`^${name}$`, 'i') } });
-//         }
-//         if (!details || Object.keys(details).length === 0) return next(new errorHandling(`No admin found by given ${req.query.email ? "email" : "name"}.`, 404));
-//         res.status(200).json({
-//             status: true,
-//             details
-//         });
-//     } catch (error) {
-//         return next(new errorHandling(error.message, error.statusCode || 500));
+        if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
+        if (!req.query.type) return next(new errorHandling("Invalid request please specify type.", 400));
+        let details;
+        let type;
+        if (req.query.type == "admin") type = "admin"
+        else type = "user"
+        
 
-//     }
-// }
+        if (req.query.email) {
+            if (!validateEmail(req.query.email)) return next(new errorHandling("Invalid email address.Please use valid email address", 400));
+            details = await User.find({ "email": req.query.email, role: type ,isDeleted:"false"},"-_id -password -role -isDeleted");
+        }
+
+        if (req.query.name) {
+            const checkName = req.query.name.split("{##$}");
+            // console.log(checkName)
+            if (checkName.length === 1 && checkName[0] === " ") return next(new errorHandling("Invalid name.Please use valid name.", 400))
+            const name = req.query.name.trim()
+            details = await User.find({ "name": { $regex: new RegExp(`^${name}$`, 'i') }, role: type ,isDeleted:"false"},"-_id -password -role -isDeleted");
+        }
+        if (!details || Object.keys(details).length === 0) return next(new errorHandling(`No ${type} found by given ${req.query.email ? "email" : "name"}.`, 404));
+        res.status(200).json({
+            status: true,
+            details
+        });
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
+
+    }
+}
 
 
 
@@ -161,7 +170,7 @@ module.exports.forgotPassword = async (req, res, next) => {
         }
         // Create the reset link
         let resetLink
-        if(findMail.role=="admin") resetLink = `${process.env.URL}/admin/reset-password/${passwordResetToken}`;
+        if (findMail.role == "admin") resetLink = `${process.env.URL}/admin/reset-password/${passwordResetToken}`;
         else resetLink = `${process.env.URL}/user/reset-password/${passwordResetToken}`;
         // Construct the email message
         const message = messages(resetLink);
