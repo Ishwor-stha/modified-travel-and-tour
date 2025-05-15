@@ -21,7 +21,7 @@ Router.route("/logout-admin/").delete(checkJwt,logout);
 
 Router.route("/update-admin/").patch(checkJwt, updateUserOrAdmin);
 
-// Router.route("/remove-admin/:id").delete(checkJwt, removeAdmin);
+Router.route("/remove-admin/:id").delete(checkJwt, removeAdmin);
 
 Router.route("/delete-account").delete(checkJwt,deleteAdminOrUser)
 

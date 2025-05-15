@@ -10,6 +10,7 @@ const { successMessage } = require("../utils/sucessMessage");
 // const { doValidations } = require("../utils/doValidations");
 // const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const User = require("../modles/userModel");
+const { capaitlize } = require("../utils/capitalizedFirstLetter");
 
 const restrict = (role,allowedRole, urlFromClient, validUrl) => {
     const onlyUrl = urlFromClient.split("?")[0]
@@ -38,10 +39,6 @@ module.exports.getUserOrAdminById=async(req,res,next)=>{
         return next(new errorHandling(error.message,error.statusCode ||500));
     }
 }
-
-
-
-
 
 
 
@@ -144,28 +141,28 @@ module.exports.logout = (req, res, next) => {
     }
 }
 
-// }
+
 // @method delete
 // @desc:controller to delete new admin
-// @endpoint: localhost:6000/admin/delete-admin
-// module.exports.removeAdmin = async (req, res, next) => {
-//     try {
-//         const adminId = req.params.id;//from url
-//         if (!adminId) return next(new errorHandling("No admin admin id is provided please try again.", 400));
-//         const del = await admin.findByIdAndUpdate(adminId, { isDeleted: true });
-//         // check if admin is deleted
-//         // if (!del) {
-//         if (!del) {
-//             throw new errorHandling("Failed to remove admin.Please try again.", 500);
-//         }
-//         successMessage(res, "Admin removed successfully.", 200);
+// @endpoint: localhost:6000/admin/remove-admin
+module.exports.removeAdmin= async (req, res, next) => {
+    try {
+        const userId = req.params.id;//from url
+        if (!userId) return next(new errorHandling(`No ${capaitlize(req.user.role)} id is provided please try again.`, 400));
+        const del = await User.findByIdAndUpdate(adminId, { isDeleted: true });
+        // check if admin is deleted
+        // if (!del) {
+        if (!del) {
+            throw new errorHandling("Failed to remove admin.Please try again.", 500);
+        }
+        successMessage(res, `${capaitlize(req.user.role)} removed successfully.`, 200);
 
-//     } catch (error) {
-//         return next(new errorHandling(error.message, error.statusCode || 500));
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
 
-//     }
+    }
 
-// }
+}
 
 // @endpoint:localhost:6000/admin/forget-password
 // @desc:forget password also send gmail
