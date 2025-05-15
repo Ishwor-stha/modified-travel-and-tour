@@ -115,6 +115,4 @@ module.exports.deleteAdminOrUser = async (req, res, next) => {
     }
 
 }
-// forgot
-// reset
 

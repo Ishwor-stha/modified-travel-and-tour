@@ -11,9 +11,9 @@ const { successMessage } = require("../utils/sucessMessage");
 // const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const User = require("../modles/userModel");
 
-const restrict = (role, urlFromClient, validUrl) => {
+const restrict = (role,allowedRole, urlFromClient, validUrl) => {
     const onlyUrl = urlFromClient.split("?")[0]
-    return role === "admin" && onlyUrl === validUrl
+    return role === allowedRole && onlyUrl === validUrl
 }
 
 // @method GET
@@ -21,7 +21,7 @@ const restrict = (role, urlFromClient, validUrl) => {
 // @endpoint: localhost:6000/admin/get-admins
 module.exports.getAllAdmin = async (req, res, next) => {
     try {
-        if (!restrict(req.user.role, req.originalUrl, process.env.adminGetRoute)) return next(new errorHandling("You donot have permission to perform this task.", 400));
+        if (!restrict(req.user.role,"admin", req.originalUrl, process.env.adminGetRoute)) return next(new errorHandling("You donot have permission to perform this task.", 400));
 
         let { page = 1 } = req.query;
         page = Math.ceil(page);
@@ -51,7 +51,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
 module.exports.getAdminAndUserByEmailOrName = async (req, res, next) => {
  
     try {
-        if (!restrict(req.user.role, req.originalUrl, process.env.validRouteToGetByNameOrEmail)) return next(new errorHandling("You donot have permission to perform this task.", 400));
+        if (!restrict(req.user.role,"admin", req.originalUrl, process.env.validRouteToGetByNameOrEmail)) return next(new errorHandling("You donot have permission to perform this task.", 400));
 
         if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
         if (!req.query.type) return next(new errorHandling("Invalid request please specify type.", 400));
@@ -266,3 +266,4 @@ module.exports.resetPassword = async (req, res, next) => {
         return next(new errorHandling(error.message, error.statusCode || 500));
     }
 };
+
