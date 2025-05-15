@@ -8,5 +8,6 @@ module.exports.databaseConnect=async ()=> {
         console.error(`Error connecting to the database: ${error.message}`);
         // Handle error 
         throw new errorHandling(error.message, 500);
+
     }
 }

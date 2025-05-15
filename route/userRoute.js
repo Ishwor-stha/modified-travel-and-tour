@@ -1,9 +1,12 @@
 const express=require("express")
 const Router=express.Router();
 const {createUserAndAdmin,updateUserOrAdmin,deleteAdminOrUser}=require("../controller/userController");
-const{resetPassword,forgotPassword}=require("../controller/authController")
+const{resetPassword,forgotPassword,getUserOrAdminById}=require("../controller/authController")
 const {checkIfDeleted,login}=require("../controller/loginController")
 const {checkJwt}=require("../middlewares/checkjwt")
+
+
+Router.route("/get-user/").get(checkJwt,getUserOrAdminById)
 
 Router.route("/create-user").post(createUserAndAdmin)
 Router.route("/user-login").post(checkIfDeleted,login)

@@ -16,6 +16,35 @@ const restrict = (role,allowedRole, urlFromClient, validUrl) => {
     return role === allowedRole && onlyUrl === validUrl
 }
 
+module.exports.getUserOrAdminById=async(req,res,next)=>{
+    try{
+        if(req.user.role==="user"){
+            if(!restrict(req.user.role,"user",req.originalUrl,process.env.validGetByIdUser))return next(new errorHandling("You donot have permission to perform this task.", 400));
+        }
+        else if(req.user.role==="admin"){
+            if(!restrict(req.user.role,"admin",req.originalUrl,process.env.validGetByIdAdmin))return next(new errorHandling("You donot have permission to perform this task.", 400));
+
+        }
+        const userId=req.user.userId;
+        const user=await User.findById(userId,"-password -isDeleted -role")
+        if(!user)return next(new errorHandling(`Cannot get ${req.user.role} from given id.`,400));
+        res.status(200).json({
+            status:true,
+            userDetail:user
+        })
+        
+
+    }catch(error){
+        return next(new errorHandling(error.message,error.statusCode ||500));
+    }
+}
+
+
+
+
+
+
+
 // @method GET
 // @desc:controller to get all admin
 // @endpoint: localhost:6000/admin/get-admins
