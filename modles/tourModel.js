@@ -11,25 +11,67 @@ const tourSchema = new mongoose.Schema({
         required: [true, "Country of tour  is missing."],
    
     },
-    adult_price: {
+    price: {
         type: Number,
-        required: [true, "A adult price is missing"]
+        required: [true, "A adult price is missing."]
     },
-    youth_price: {
-        type: Number,
-        required: [true, "A youth price is missing"]
+    accomodation:{
+        type:String,
+        require:[true,"Accomodation field is empty."]
     },
-    description: {
-        type: "String",
-        required: [true, "A Product should have Description"]
+    region:{
+        type:String,
+        require:[true,"Region field is empty."]
     },
-    placeName: {
-        type: "String",
-        required: [true, "A Tour Must have place name"]
+    distance:{
+      type:Number,
+      require:[true,"Distance field is empty."]  
     },
-    district:{
-        type:"String",
-        required:[true,"A tour must have its district name"]
+    startPoint:{
+        type:String,
+        require:[true,"Starting point field is empty."]  
+
+
+    },
+     endPoint:{
+        type:String,
+        require:[true,"End point field is empty."]  
+
+
+    },
+    duration:{
+        type:Number,
+        require:[true,"Duration field is empty."]  
+        
+    },
+    maxAltitude:{
+        type:Number,
+        require:[true,"Max altitude field is empty."]  
+
+    },
+    mealsIncluded: {
+        type: String,
+        required: [true, "Meals included field is empty."]
+    },
+      groupSize: {
+        type: Nuumber,
+        required: [true, "Group size field is empty."]
+    },
+    natureOfTour: {
+        type: String,
+        required: [true, "Nature of tour field is empty."]
+    },
+    bestSeason:{
+        type:String,
+        require:[true,"The season field is empty"]
+    },
+    activityPerDay: {
+        type: String,
+        required: [true, "Activity per day field is empty."]
+    },
+   transportation:{
+        type:String,
+        required:[true,"Transportation field is empty."]
     },
     // image: {
     //     type: [String],
@@ -40,73 +82,10 @@ const tourSchema = new mongoose.Schema({
     //         message: `At least one image is required for the tour .`
     //     }
     // },
-    category: {
-        type: String,
-        required: [true, "Category is missing"]//luxury,holiday,vacation
-
-    },
-    pickup_destination:{
-        type:String,
-        required:[true,"A tour must have pickup point"]
-
-
-    },
-    drop_destination:{
-        type:String,
-        required:[true,"A tour must have droping point"]
-
-
-    },
-    tour_type: {
-        type: String,
-        required: [true, "Tour is missing tour type (Domestic,International)"],
-        enum: ["domestic", "international"]
-    },
-    active_month: {
-        type: [String],
-        validate: {
-            validator: function ( months) {
-                months=months[0].split(",")
-               
-                const validMonths = [
-                    "january", "february", "march", "april", "may", "june",
-                    "july", "august", "september", "october", "november", "december"
-                ];
-                
-                for (let month in months) {
-                    
-                    month=months[month]
-                    if (!validMonths.includes(month.toLowerCase())) {
-                        return false;
-                    }
-                }
-                return true;
-            },
-            message: "Active month must contain valid month names"
-        }
-    },
+   
     popularity: {
         type: Number,
         default: 0
-    },
-    minimumGuest: {
-        type: Number,
-        required: [true, "A tour must have a minimum number of people"],
-        min: [1, " Mimimum  number of  people must be at least 1"],
-        validate: {
-            validator: Number.isInteger,
-            message: "Minimum  number of people must be an integer"
-        }
-    },
-    duration: {
-        type: Number,
-        required: [true, "Duration is Missing"],
-        validate: {
-            validator: function (value) {
-                return typeof value === "number"
-            },
-            message: "Duration must be a number"
-        }
     },
     discount: {
         type: Number,

@@ -1,5 +1,6 @@
 const express=require("express");
-const  {createAdmin,updateAdmin,deleteAdmin,getAllAdmin,logout,removeAdmin,forgotPassword,resetPassword,getAdminByEmailOrName,getAdminById}  = require("../controller/authController");
+const  {createAdmin,updateAdmin,deleteAdmin,getAllAdmin,logout,removeAdmin,
+        forgotPassword,resetPassword,getAdminByEmailOrName,getAdminById}  = require("../controller/authController");
 const {checkIfDeleted,login}=require("../controller/loginController")
 const {checkJwt}=require("../middlewares/checkjwt")
 
