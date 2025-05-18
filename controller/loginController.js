@@ -51,8 +51,7 @@ module.exports.login = async (req, res, next) => {
 
         const payload = {
             userId: req.userData._id,
-            email: req.userData.email,
-            role:req.userData.role
+            email: req.userData.email
         };
         // generate jwt token
         const token = jwt.sign(payload, process.env.SECRETKEY, { expiresIn: process.env.jwtExpires });

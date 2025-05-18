@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const slugify = require("slugify");
 const tourSchema = new mongoose.Schema({
-    name: {
+    tourName: {
         type: "String",
         required: [true, "Name of prodct  is missing"],
         unique: [true, "Tour name already exists"]

@@ -119,48 +119,17 @@ module.exports.getOneTour = async (req, res, next) => {
 //@desc:Adding the tours
 module.exports.postTour = async (req, res, next) => {
     try {
-        let data = {};
-        const keys = [
-            "name", "adult_price", "youth_price", "description", "destination",
-            "category", "tour_type", "duration", "discount", "placeName", "district",
-            "active_month", "popularity", "minimumGuest", "country", "drop_destination", "pickup_destination"
-        ];
-
-        // Insert data by filtering
-        for (let key in req.body) {
-            if (keys.includes(key)) {
-                if (typeof req.body[key] === "number") {
-                    data[key] = req.body[key];
-                } else if (req.body[key] != null) {
-                    data[key] = req.body[key].toString();
-                }
-            }
+       const possiblefield=["tourName","country","price","accomodation","region","distance","startPoint","endPoint",
+        "duration","maxAltitude","mealsIncluded","groupSize","natureOfTour","bestSeason","activityPerDAy","transportation"];
+        const check=possiblefield.filter(key=> !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim()=== "");
+        if(check.length !==0)return next(new errorHandler(`${check.join(",")} ${check.length>1?"field is":"fields are"} missing.`));
+        let data={}
+        for(key in possiblefield){
+            data[key]=req.body[key];
         }
-       
-
-        // Handle multiple file uploads (if present)
-        // if (req.files) {
-        //     // Store all image file paths in an array
-        //     data.image = req.files.map(file => file.path);
-        // }
-
-        // Create a new tour in the database
-
-        const newTour = await Tour.create(data);
-        if (!newTour || Object.keys(newTour).length === 0) {
-            // Delete uploaded files on failure
-            // if (req.files) {
-            //     const uploadedFilePaths = req.files.map(file => file.path);
-            //     deleteImage(uploadedFilePaths);
-            // }
-            return next(new errorHandler("Cannot create tour, please try again later", 500));
-        }
-
-        // Successfully created the tour
-        res.status(201).json({
-            status: true,
-            message: `${newTour.name} created successfully`
-        });
+        const create=await Tour.create(data);
+        if(!create)return next(new errorHandler("Cannot create the tour.Please try again later",500));
+        successMessage(res,`${req.body[tourName]} created sucessfully.`,200);
 
     } catch (error) {
         // Delete uploaded files immediately on error
