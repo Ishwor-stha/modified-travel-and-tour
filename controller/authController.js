@@ -7,25 +7,123 @@ const { messages } = require("../utils/message");
 // const sendMessage = require("../utils/sendMessage");
 const { sendMessage } = require("../utils/nodemailer");
 const { successMessage } = require("../utils/sucessMessage");
-// const { doValidations } = require("../utils/doValidations");
+const { doValidations } = require("../utils/doValidations");
 // const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const User = require("../modles/userModel");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 
-const restrict = (role,allowedRole, urlFromClient, validUrl) => {
-    const onlyUrl = urlFromClient.split("?")[0]
-    return role === allowedRole && onlyUrl === validUrl
+
+
+// @method POST
+// @desc:controller to create new admin or user
+// @endpoint: localhost:6000/api/admin/create-admin
+//   or
+// @endpoint: localhost:6000/api/user/user-login
+
+module.exports.createAdmin = async (req, res, next) => {
+    try {
+        if (!req.body || Object.keys(req.body).length === 0) return next(new errorHandling("Empty body field please fill the form.", 400));
+        const requireFieds = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
+        const check = requireFieds.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
+        if (check.length !== 0) return next(new errorHandling(`${check.join()} ${check.length > 1 ? "fields are" : "field is"} missing.`, 400));
+        const message = doValidations(req.body.email, req.body.phone, req.body.password, req.body.confirmPassword);
+        if (message) return next(new errorHandling(message, 400));
+        const data = {}
+        
+        req.body["name"] = capaitlize(req.body.name)
+        for (let key in requireFieds) {
+            key = requireFieds[key];
+            if (key === "confirmPassword") continue;
+            if (key === "password") {
+                data[key] = await bcrypt.hash(req.body[key], 10);
+                continue;
+            }
+            data[key] = req.body[key];
+
+        }
+        // console.log(req.originalUrl)
+        // console.log(data)
+        const createUser = await User.create(data);
+        if (!createUser) return next(new errorHandling("Cannot create a admin please try again later.", 500));
+        successMessage(res, `${req.body.name} created sucessfully`, 200)
+
+    } catch (error) {
+        // console.log(error)
+        if (error.code === 11000) return next((new errorHandling("The email address is already in use.Please try to create with another email", error.statusCode || 400)));
+        return next((new errorHandling(error.message, error.statusCode || 500)));
+
+    }
+}
+module.exports.updateAdmin = async (req, res, next) => {
+    try {
+        const userId = req.user.userId;//from checkJwt controller
+        if (!userId) return next(new errorHandling("Something went wrong.", 400));
+        if(!req.body.currentPassword || req.body["currentPassword"].trim()===""  )return next(new errorHandling("Please enter current password to update details",400));
+        const checkPass=await User.findById(userId,"+password +name")
+        const check=await bcrypt.compare(req.body.currentPassword, checkPass.password);
+        if(!check)return next(new errorHandling("Password doesnot match.",400));
+        if (!req.body) return next(new errorHandling("Please provide the body.", 400));
+        const possibleFields = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
+        const filterField = Object.keys(req.body).filter(key => possibleFields.includes(key) && req.body[key] && req.body[key].toString().trim() !== "");
+        if (!filterField || filterField.length === 0) return next(errorHandling("Please provide data to update.", 400));
+        const message = doValidations(req.body.email, req.body.phone, req.body.password, req.body.confirmPassword)
+        if (message) return next(new errorHandling(message, 400));
+        const updatedData = {}
+        for (const key of filterField) {
+            if(key==="name") req.body[key]=capaitlize(req.body["name"])
+            if (key === "password") req.body[key] = await bcrypt.hash(req.body[key], 10);
+            if(key==="confirmPassword")continue;
+            updatedData[key] = req.body[key];
+        };
+
+        const updateUser = await User.findByIdAndUpdate(userId, updatedData);
+        if(!updateUser) return next(new errorHandling("Cannot update the user.Please try again later",500));
+        successMessage(res,`${checkPass.name}User updated sucessfully`,200);
+
+
+
+    } catch (error) {
+        // console.log(error)code: 
+        if(error.code===11000)return next(new errorHandling("Email is already in use please try different email.",400))
+        return next(new errorHandling(error.message, error.statusCode || 500))
+    }
 }
 
-module.exports.getUserOrAdminById=async(req,res,next)=>{
-    try{
-        if(req.user.role==="user"){
-            if(!restrict(req.user.role,"user",req.originalUrl,process.env.validGetByIdUser))return next(new errorHandling("You donot have permission to perform this task.", 400));
+// @method delete
+// @desc:controller to delete new admin
+// @endpoint: localhost:6000/admin/delete-admin
+module.exports.deleteAdmin = async (req, res, next) => {
+    try {
+       const userId = req.user.userId;//from checkJwt controller
+        if (!userId) return next(new errorHandling("Something went wrong.", 400));
+        if(!req.body)return next(new errorHandling("Please provide currentPassword.", 400));
+        if(!req.body.currentPassword || req.body["currentPassword"].trim()===""  )return next(new errorHandling("Please enter current password to delete your account.",400));
+        
+        const checkPass=await User.findById(userId,"+password +name")
+        const check=await bcrypt.compare(req.body.currentPassword, checkPass.password);
+        if(!check)return next(new errorHandling("Password doesnot match.",400));
+        const del = await User.findByIdAndUpdate(userId, { isDeleted: true });
+        // check if admin is deleted
+        // if (!del) {
+        if (!del) {
+            throw new errorHandling("Failed to remove admin.Please try again.", 500);
         }
-        else if(req.user.role==="admin"){
-            if(!restrict(req.user.role,"admin",req.originalUrl,process.env.validGetByIdAdmin))return next(new errorHandling("You donot have permission to perform this task.", 400));
+          res.clearCookie('auth_token', {
+            httpOnly: true,
+            sameSite: "Strict"
+        });
+        successMessage(res, `${capaitlize(del.role)}removed successfully.`, 200);
 
-        }
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
+
+    }
+
+}
+
+module.exports.getAdminById=async(req,res,next)=>{
+    try{
+       
         const userId=req.user.userId;
         const user=await User.findById(userId,"-password -isDeleted -role")
         if(!user)return next(new errorHandling(`Cannot get ${req.user.role} from given id.`,400));
@@ -43,12 +141,11 @@ module.exports.getUserOrAdminById=async(req,res,next)=>{
 
 
 // @method GET
-// @desc:controller to get all admin
+// @desc:controller to get all admin list of active or deleted
 // @endpoint: localhost:6000/admin/get-admins
 module.exports.getAllAdmin = async (req, res, next) => {
     try {
-        if (!restrict(req.user.role,"admin", req.originalUrl, process.env.adminGetRoute)) return next(new errorHandling("You donot have permission to perform this task.", 400));
-
+        
         let { page = 1 } = req.query;
         page = Math.ceil(page);
         const limit = 10;
@@ -56,7 +153,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
         let trueOrFalse
         if (req.query.isDeleted === "true") trueOrFalse = true;
         else trueOrFalse = false;
-        const allAdmin = await User.find({ role: "admin", isDeleted: trueOrFalse }, "-_id -password -role -isDeleted").skip(skip).limit(limit);;//exclude _id and password ....
+        const allAdmin = await User.find({ isDeleted: trueOrFalse }, "-_id -password -role -isDeleted").skip(skip).limit(limit);;//exclude _id and password ....
         // if there is no admin
         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
 
@@ -74,22 +171,17 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
 
 
-module.exports.getAdminAndUserByEmailOrName = async (req, res, next) => {
+module.exports.getAdminByEmailOrName = async (req, res, next) => {
  
     try {
-        if (!restrict(req.user.role,"admin", req.originalUrl, process.env.validRouteToGetByNameOrEmail)) return next(new errorHandling("You donot have permission to perform this task.", 400));
 
         if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
         if (!req.query.type) return next(new errorHandling("Invalid request please specify type.", 400));
         let details;
-        let type;
-        if (req.query.type == "admin") type = "admin"
-        else type = "user"
-        
-
+   
         if (req.query.email) {
             if (!validateEmail(req.query.email)) return next(new errorHandling("Invalid email address.Please use valid email address", 400));
-            details = await User.find({ "email": req.query.email, role: type ,isDeleted:"false"},"-_id -password -role -isDeleted");
+            details = await User.find({ "email": req.query.email ,isDeleted:"false"},"-_id -password -role -isDeleted");
         }
 
         if (req.query.name) {
@@ -97,9 +189,9 @@ module.exports.getAdminAndUserByEmailOrName = async (req, res, next) => {
             // console.log(checkName)
             if (checkName.length === 1 && checkName[0] === " ") return next(new errorHandling("Invalid name.Please use valid name.", 400))
             const name = req.query.name.trim()
-            details = await User.find({ "name": { $regex: new RegExp(`^${name}$`, 'i') }, role: type ,isDeleted:"false"},"-_id -password -role -isDeleted");
+            details = await User.find({ "name": { $regex: new RegExp(`^${name}$`, 'i') } ,isDeleted:"false"},"-_id -password -role -isDeleted");
         }
-        if (!details || Object.keys(details).length === 0) return next(new errorHandling(`No ${type} found by given ${req.query.email ? "email" : "name"}.`, 404));
+        if (!details || Object.keys(details).length === 0) return next(new errorHandling(`No admin found by given ${req.query.email ? "email" : "name"}.`, 404));
         res.status(200).json({
             status: true,
             details
