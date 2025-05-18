@@ -54,7 +54,7 @@ const tourSchema = new mongoose.Schema({
         required: [true, "Meals included field is empty."]
     },
       groupSize: {
-        type: Nuumber,
+        type: Number,
         required: [true, "Group size field is empty."]
     },
     natureOfTour: {

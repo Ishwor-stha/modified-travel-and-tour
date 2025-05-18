@@ -127,6 +127,12 @@ module.exports.postTour = async (req, res, next) => {
         for(key in possiblefield){
             data[key]=req.body[key];
         }
+        if(req.body["discount"]){
+            const price=req.body["price"].toNumber()
+            const discount=req.body["discount"].toNumber()
+            req.body["price"]=price+(price*(discount/100));
+            data["discount"]=req.body["discount"];
+        }
         const create=await Tour.create(data);
         if(!create)return next(new errorHandler("Cannot create the tour.Please try again later",500));
         successMessage(res,`${req.body[tourName]} created sucessfully.`,200);
@@ -153,17 +159,12 @@ module.exports.updateTour = async (req, res, next) => {
         // id from url
         let id = req.params.id;
         if (!id) return next(new errorHandler("No tour id is given.Please try again.", 400));
-        const keys = ["name", "drop_destination", "pickup_destination", "country", "adult_price", "youth_price", "description", "destination", /*"image",*/ "district", "category", "tour_type", "duration", "discount", "placeName", "active_month", "popularity", "minimumGuest"];
+        const possiblefield=["tourName","country","price","accomodation","region","distance","startPoint","endPoint",
+        "duration","maxAltitude","mealsIncluded","groupSize","natureOfTour","bestSeason","activityPerDAy","transportation"];
 
         let updatedData = {};
 
-        // check whether the req.body has valid key
-        for (let key in req.body) {
-            if (keys.includes(key)) {
-                updatedData[key] = req.body[key];
-            }
-        }
-
+       
         if (req.body.discount !== undefined &&  !isValidNumber(req.body.discount)) {
             throw new Error("Please enter valid discount number");//straight to the catch block
 
