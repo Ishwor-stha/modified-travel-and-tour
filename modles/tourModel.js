@@ -3,17 +3,20 @@ const slugify = require("slugify");
 const tourSchema = new mongoose.Schema({
     tourName: {
         type: "String",
-        required: [true, "Name of prodct  is missing"],
-        unique: [true, "Tour name already exists"]
+        required: [true, "Name of tour is missing"]
     },
     country: {
         type: "String",
         required: [true, "Country of tour  is missing."],
    
     },
-    price: {
+   originalPrice: {
         type: Number,
-        required: [true, "A adult price is missing."]
+        required: [true, "A original price is missing."]
+    },
+    discountedPrice: {
+        type: Number,
+        
     },
     accomodation:{
         type:String,
@@ -24,7 +27,7 @@ const tourSchema = new mongoose.Schema({
         require:[true,"Region field is empty."]
     },
     distance:{
-      type:Number,
+      type:String,
       require:[true,"Distance field is empty."]  
     },
     startPoint:{
@@ -40,12 +43,12 @@ const tourSchema = new mongoose.Schema({
 
     },
     duration:{
-        type:Number,
+        type:String,
         require:[true,"Duration field is empty."]  
         
     },
     maxAltitude:{
-        type:Number,
+        type:String,
         require:[true,"Max altitude field is empty."]  
 
     },
@@ -102,20 +105,8 @@ const tourSchema = new mongoose.Schema({
     }
 
 });
-tourSchema.pre("save", function (next) {
-    if (this.isModified("name")) {
-        this.slug = slugify(this.name);
-    }
-    next();
 
-})
-tourSchema.pre("findOneAndUpdate", function (next) {
-    const update = this.getUpdate();
-    if (update.name) {
-        update.slug = slugify(update.name);
-    }
-    next();
-});
+
 
 const Tour = mongoose.model("tour", tourSchema);
 module.exports = Tour;

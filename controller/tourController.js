@@ -11,6 +11,7 @@ const { sendMessage } = require("../utils/nodemailer");
 const { isValidNumber } = require("../utils/isValidNumber");
 const { enquiryMessage } = require("../utils/enquiryMessage");
 const { successMessage } = require("../utils/sucessMessage");
+const slugify = require("slugify");
 
 
 //@method :GET 
@@ -119,23 +120,40 @@ module.exports.getOneTour = async (req, res, next) => {
 //@desc:Adding the tours
 module.exports.postTour = async (req, res, next) => {
     try {
-        const possiblefield = ["tourName", "country", "price", "accomodation", "region", "distance", "startPoint", "endPoint",
-            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDAy", "transportation"];
+        const possiblefield = ["tourName", "country",  "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
+            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
+        const checkTour=await Tour.find({tourName:req.body["tourName"]}).select("tourName");
+        
+        
+        if(Object.keys(checkTour).length!==0)return next(new errorHandler("The tour with this name is already exists.",400));
         let data = {}
-        for (key in possiblefield) {
+        for (const key of possiblefield) {
             data[key] = req.body[key];
         }
-        if (req.body["discount"]) {
-            const price = req.body["price"].toNumber()
-            const discount = req.body["discount"].toNumber()
-            req.body["price"] = price + (price * (discount / 100));
-            data["discount"] = req.body["discount"];
+        try {
+            if (req.body["discount"]) {
+                const price = parseFloat(req.body["originalPrice"]);
+                const discount = parseFloat(req.body["discount"]);
+                data["discountedPrice"] = price -(price * (discount / 100));
+                data["discount"] = req.body["discount"];
+                if(Number.isNaN(price) || Number.isNaN(discount)){
+                    throw new Error();
+                 
+                }
+            }
+        } catch (error) {
+            
+            return next(new errorHandler("Price or Discount must be number.", error.statusCode || 400));
+
+
         }
+        data["slug"]=slugify(req.body["tourName"]);
+        
         const create = await Tour.create(data);
         if (!create) return next(new errorHandler("Cannot create the tour.Please try again later", 500));
-        successMessage(res, `${req.body[tourName]} created sucessfully.`, 200);
+        successMessage(res, `${req.body["tourName"]} created sucessfully.`, 200);
 
     } catch (error) {
         // Delete uploaded files immediately on error
@@ -143,8 +161,11 @@ module.exports.postTour = async (req, res, next) => {
         //     const uploadedFilePaths = req.files.map(file => file.path);
         //     deleteImage(uploadedFilePaths);
         // }
+        console.log(error);
+
+
         if (error.code === 11000 || error.code === "E11000") {
-            return next(new errorHandler("Tour name already exists", 400));
+            return next(new errorHandler("The tour with this name is already exists.", 400));
         }
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
@@ -164,34 +185,35 @@ module.exports.updateTour = async (req, res, next) => {
 
         let updatedData = {};
 
-
         if (req.body.discount !== undefined && !isValidNumber(req.body.discount)) {
             throw new Error("Please enter valid discount number");//straight to the catch block
 
         }
 
-        for (key in Object.keys(req.body)) {
+        for (key of Object.keys(req.body)) {
             if (possiblefield.includes(key)) {
                 updatedData[key] = req.body[key];
             }
         }
-        if (req.body.discount || (req.body.price && req.body.price.toString().trim() === "")) {
-            const data = await Tour.findById(id, "+discount +price");
+        if (req.body.discount || (req.body.originalPrice && req.body.originalPrice.toString().trim() !== "")) {
+            const data = await Tour.findById(id, "+discount +originalPrice");
 
-            
-            const price = req.body.price? parseFloat(req.body.price): parseFloat(data.price);
 
-            const discount = req.body.discount? parseFloat(req.body.discount): parseFloat(data.discount);
+            const price = req.body.originalPrice ? parseFloat(req.body.originalPrice) : parseFloat(data.originalPrice);
+
+            const discount = req.body.discount ? parseFloat(req.body.discount) : parseFloat(data.discount);
 
             if (req.body.discount) {
                 updatedData["discount"] = discount;
             }
 
             // Recalculate price including discount
-            updatedData["price"] = price + (price * (discount / 100));
+            updatedData["originalPrice"]=price
+            updatedData["discountedPrice"] = price - (price * (discount / 100));
         }
-
-
+        if (req.body["tourName"] && req.body["tourName"].toString().trim() !== "") {
+            updatedData["slug"] = slugify(tourName);
+        }
         // let oldPhoto;
         // if (req.files) {
         //     updatedData.image = req.files.map(file => file.path); // Update image if new file is uploaded
@@ -202,7 +224,7 @@ module.exports.updateTour = async (req, res, next) => {
 
 
         // querying to database
-        const updateTour = await Tour.findByIdAndUpdate(id, updatedData, { new: true });
+        const updateTour = await Tour.findByIdAndUpdate(id, updatedData);
         // console.log(updateTour)
         if (!updateTour || Object.keys(updateTour).length === 0) {
             // if (req.files) { 
@@ -228,6 +250,7 @@ module.exports.updateTour = async (req, res, next) => {
         //     const uploadedFilePaths = req.files.map(file => file.path);
         //     deleteImage(uploadedFilePaths);
         // }
+        
         next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
     }
 };
