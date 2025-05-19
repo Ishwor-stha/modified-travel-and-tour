@@ -7,10 +7,10 @@ const { validateEmail } = require("../utils/emailValidation");
 const { bookMessage } = require("../utils/bookingMessage");
 const { isValidNepaliPhoneNumber } = require("../utils/validatePhoneNumber");
 // const sendMessage = require("../utils/sendMessage");
-const {sendMessage}=require("../utils/nodemailer");
+const { sendMessage } = require("../utils/nodemailer");
 const { isValidNumber } = require("../utils/isValidNumber");
 const { enquiryMessage } = require("../utils/enquiryMessage");
-const {successMessage} = require("../utils/sucessMessage");
+const { successMessage } = require("../utils/sucessMessage");
 
 
 //@method :GET 
@@ -49,9 +49,9 @@ module.exports.getTours = async (req, res, next) => {
                 }
             }
         }
-        
 
-     
+
+
 
         // Fetching the data from the database using $or condition for flexible matching
         let tourQuery = Tour.find();
@@ -83,7 +83,7 @@ module.exports.getTours = async (req, res, next) => {
 
         res.status(200).json({
             pageNo: page,
-            totalTours:tour.length,
+            totalTours: tour.length,
             status: true,
             tourList: tour
         });
@@ -119,23 +119,23 @@ module.exports.getOneTour = async (req, res, next) => {
 //@desc:Adding the tours
 module.exports.postTour = async (req, res, next) => {
     try {
-       const possiblefield=["tourName","country","price","accomodation","region","distance","startPoint","endPoint",
-        "duration","maxAltitude","mealsIncluded","groupSize","natureOfTour","bestSeason","activityPerDAy","transportation"];
-        const check=possiblefield.filter(key=> !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim()=== "");
-        if(check.length !==0)return next(new errorHandler(`${check.join(",")} ${check.length>1?"field is":"fields are"} missing.`));
-        let data={}
-        for(key in possiblefield){
-            data[key]=req.body[key];
+        const possiblefield = ["tourName", "country", "price", "accomodation", "region", "distance", "startPoint", "endPoint",
+            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDAy", "transportation"];
+        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
+        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
+        let data = {}
+        for (key in possiblefield) {
+            data[key] = req.body[key];
         }
-        if(req.body["discount"]){
-            const price=req.body["price"].toNumber()
-            const discount=req.body["discount"].toNumber()
-            req.body["price"]=price+(price*(discount/100));
-            data["discount"]=req.body["discount"];
+        if (req.body["discount"]) {
+            const price = req.body["price"].toNumber()
+            const discount = req.body["discount"].toNumber()
+            req.body["price"] = price + (price * (discount / 100));
+            data["discount"] = req.body["discount"];
         }
-        const create=await Tour.create(data);
-        if(!create)return next(new errorHandler("Cannot create the tour.Please try again later",500));
-        successMessage(res,`${req.body[tourName]} created sucessfully.`,200);
+        const create = await Tour.create(data);
+        if (!create) return next(new errorHandler("Cannot create the tour.Please try again later", 500));
+        successMessage(res, `${req.body[tourName]} created sucessfully.`, 200);
 
     } catch (error) {
         // Delete uploaded files immediately on error
@@ -159,16 +159,39 @@ module.exports.updateTour = async (req, res, next) => {
         // id from url
         let id = req.params.id;
         if (!id) return next(new errorHandler("No tour id is given.Please try again.", 400));
-        const possiblefield=["tourName","country","price","accomodation","region","distance","startPoint","endPoint",
-        "duration","maxAltitude","mealsIncluded","groupSize","natureOfTour","bestSeason","activityPerDAy","transportation"];
+        const possiblefield = ["tourName", "country", "accomodation", "region", "distance", "startPoint", "endPoint",
+            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDAy", "transportation"];
 
         let updatedData = {};
 
-       
-        if (req.body.discount !== undefined &&  !isValidNumber(req.body.discount)) {
+
+        if (req.body.discount !== undefined && !isValidNumber(req.body.discount)) {
             throw new Error("Please enter valid discount number");//straight to the catch block
 
         }
+
+        for (key in Object.keys(req.body)) {
+            if (possiblefield.includes(key)) {
+                updatedData[key] = req.body[key];
+            }
+        }
+        if (req.body.discount || (req.body.price && req.body.price.toString().trim() === "")) {
+            const data = await Tour.findById(id, "+discount +price");
+
+            
+            const price = req.body.price? parseFloat(req.body.price): parseFloat(data.price);
+
+            const discount = req.body.discount? parseFloat(req.body.discount): parseFloat(data.discount);
+
+            if (req.body.discount) {
+                updatedData["discount"] = discount;
+            }
+
+            // Recalculate price including discount
+            updatedData["price"] = price + (price * (discount / 100));
+        }
+
+
         // let oldPhoto;
         // if (req.files) {
         //     updatedData.image = req.files.map(file => file.path); // Update image if new file is uploaded
@@ -182,14 +205,14 @@ module.exports.updateTour = async (req, res, next) => {
         const updateTour = await Tour.findByIdAndUpdate(id, updatedData, { new: true });
         // console.log(updateTour)
         if (!updateTour || Object.keys(updateTour).length === 0) {
-            // if (req.files) {
-            //     deleteImage(updatedData.image);
-            // }
+            // if (req.files) { 
+            //     deleteImage(updatedData.image); 
+            // } 
             return next(new errorHandler("Cannot update tour. Please try again later.", 500));
         }
 
-        // Delete old image if a new one was uploaded
-        // if (req.files && oldPhoto) {
+        // Delete old image if a new one was uploaded 
+        // if (req.files && oldPhoto) { 
         //     deleteImage(oldPhoto.image);
 
         // }
@@ -247,22 +270,22 @@ module.exports.bookTour = async (req, res, next) => {
 
         const { firstName, lastName, date, phone, secondPhone, email, time, age } = req.body;
         // if data is missing
-        if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName ||!secondPhone) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
+        if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName || !secondPhone) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
         const name = `${firstName} ${lastName}`;
         // email validation falils
         if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         //phone number validation fails
         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandler("Please enter valid phone number.", 400));
         if (!isValidNepaliPhoneNumber(secondPhone)) return next(new errorHandler("Please enter valid phone number.", 400));
-        if(phone===secondPhone)return next(new errorHandler("Phone number must be different in both field.",400));
-        const userDate=new Date(date)
-        const currentDate=new Date()
-        if(userDate<currentDate) return next(new errorHandler("Invalid booking date. Please select a future date.", 400));
+        if (phone === secondPhone) return next(new errorHandler("Phone number must be different in both field.", 400));
+        const userDate = new Date(date)
+        const currentDate = new Date()
+        if (userDate < currentDate) return next(new errorHandler("Invalid booking date. Please select a future date.", 400));
         // create message 
-        const message = bookMessage(name, tourName, date, phone,secondPhone, email, time, age);
-       
+        const message = bookMessage(name, tourName, date, phone, secondPhone, email, time, age);
+
         // send message to the email
-        await sendMessage(res,process.env.personal_message_gmail,"Tour Booking Alert",message);
+        await sendMessage(res, process.env.personal_message_gmail, "Tour Booking Alert", message);
         // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
         // send response
         successMessage(res, "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour", 200);
@@ -281,7 +304,7 @@ module.exports.bookTour = async (req, res, next) => {
 module.exports.enquiry = async (req, res, next) => {
     try {
         // destructring name,email,contact,message from req.body
-        const { firstName, lastName, email, contact,contact2, question } = req.body;
+        const { firstName, lastName, email, contact, contact2, question } = req.body;
         // if field is missing 
         if (!firstName || !lastName || !email || !contact || !question || !contact2) return next(new errorHandler("Some field is missing.Please fill up all the form.", 400));
         // check email if it is valid or not
@@ -289,19 +312,19 @@ module.exports.enquiry = async (req, res, next) => {
         // check phone number if it is valid or not
         if (!isValidNepaliPhoneNumber(contact)) return next(new errorHandler("Please enter valid phone number.", 400));
         if (!isValidNepaliPhoneNumber(contact2)) return next(new errorHandler("Please enter valid phone number.", 400));
-        if(contact===contact2)return next(new errorHandler("The phone number must be different in both field.",400));
+        if (contact === contact2) return next(new errorHandler("The phone number must be different in both field.", 400));
 
         // concat the first name and last name
-        const name =` ${firstName } ${lastName}`;
+        const name = ` ${firstName} ${lastName}`;
         // create message template form enquiryMessage Function
-        const createMessage = enquiryMessage(name, email, contact,contact2, question);
+        const createMessage = enquiryMessage(name, email, contact, contact2, question);
         // Send message
-        
-        await sendMessage(res,process.env.NODEMAILER_USER,"Enquiry message",createMessage);//NOTE: ENTER THE REAL COMPANY EMAIL INSTEAD OF NODEMAILER USER.
+
+        await sendMessage(res, process.env.NODEMAILER_USER, "Enquiry message", createMessage);//NOTE: ENTER THE REAL COMPANY EMAIL INSTEAD OF NODEMAILER USER.
         // await sendMessage(next, createMessage, "Enquiry message", email, name);
         // send sucess response
-        successMessage(res, "Your question is sent. Please wait for the reply.",200);
-       
+        successMessage(res, "Your question is sent. Please wait for the reply.", 200);
+
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
