@@ -24,7 +24,7 @@ module.exports.getTours = async (req, res, next) => {
 
         // let query={}
         let condition = [];
-        let fields = ["placeName", "active_month", "destination", "category", "tour_type", "duration", "name", "country", "district", "pickup_destination"];
+        let fields = ["placeName", "destination", "name", "district", "pickup_destination"];
 
         // destructuring query parameters
         let { page = 1 } = req.query;
@@ -120,7 +120,7 @@ module.exports.getOneTour = async (req, res, next) => {
 //@desc:Adding the tours
 module.exports.postTour = async (req, res, next) => {
     try {
-        const possiblefield = ["tourName", "country",  "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
+        const possiblefield = ["tourName", "country", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
             "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
@@ -180,7 +180,7 @@ module.exports.updateTour = async (req, res, next) => {
         // id from url
         let id = req.params.id;
         if (!id) return next(new errorHandler("No tour id is given.Please try again.", 400));
-        const possiblefield = ["tourName", "country", "accomodation", "region", "distance", "startPoint", "endPoint",
+        const possiblefield = ["tourName", "country", "activity","accomodation", "region", "distance", "startPoint", "endPoint",
             "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDAy", "transportation"];
 
         let updatedData = {};
@@ -269,7 +269,7 @@ module.exports.deleteTour = async (req, res, next) => {
         // sending response
         res.status(200).json({
             status: true,
-            message: `${del.name} deleted .`
+            message: `${del.tourName} is deleted .`
 
         });
     } catch (error) {

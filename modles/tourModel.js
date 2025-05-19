@@ -72,6 +72,10 @@ const tourSchema = new mongoose.Schema({
         type: String,
         required: [true, "Activity per day field is empty."]
     },
+    activity:{
+        type:String,
+        required:[true,"Activity field is required"]
+    },
    transportation:{
         type:String,
         required:[true,"Transportation field is empty."]
