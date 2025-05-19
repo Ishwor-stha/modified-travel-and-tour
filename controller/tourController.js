@@ -24,30 +24,23 @@ module.exports.getTours = async (req, res, next) => {
 
         // let query={}
         let condition = [];
-        let fields = ["placeName", "destination", "name", "district", "pickup_destination"];
+        let fields = [ "country","activity","grade"];
 
         // destructuring query parameters
         let { page = 1 } = req.query;
-
+        
         // Handling the sorting logic
-        if (req.query.adult_price || req.query.youth_price || req.query.popularity) {
-            const { adult_price, youth_price, popularity } = req.query;
-            if (adult_price) sort = adult_price === "asc" ? 1 : -1;
-            if (youth_price) sort = youth_price === "asc" ? 1 : -1;
+        if (req.query.originalPrice || req.query.popularity) {
+            const { originalPrice, popularity } = req.query;
+            if (originalPrice) sort = originalPrice === "asc" ? 1 : -1;
             if (popularity) sort = popularity === "asc" ? 1 : -1;
 
         }
+        
         // iterate through query
         for (let keys in req.query) {
             if (fields.includes(keys)) {
-                if (keys === "active_month") {
-
-                    // new RegExp("pattern",flags) object is used to make a data case insensitive "i" stands for insensitive  
-                    condition.push({ active_month: { $in: [req.query[keys]] } });//i.e{ destination: /mustang/i }
-                }
-                else {
                     condition.push({ [keys]: new RegExp(req.query[keys], "i") });
-                }
             }
         }
 
@@ -64,10 +57,9 @@ module.exports.getTours = async (req, res, next) => {
         }
 
         // If sorting by price 
-        if (req.query.adult_price || req.query.youth_price || req.query.popularity) {
+        if (req.query.originalPrice  || req.query.popularity) {
             if (req.query.popularity) tourQuery = tourQuery.sort({ popularity: sort });
-            if (req.query.adult_price) tourQuery = tourQuery.sort({ adult_price: sort });
-            if (req.query.youth_price) tourQuery = tourQuery.sort({ youth_price: sort });
+            if (req.query.originalPrice) tourQuery = tourQuery.sort({ originalPrice: sort });
 
         }
 
@@ -120,7 +112,7 @@ module.exports.getOneTour = async (req, res, next) => {
 //@desc:Adding the tours
 module.exports.postTour = async (req, res, next) => {
     try {
-        const possiblefield = ["tourName", "country", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
+        const possiblefield = ["tourName", "country","grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
             "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
@@ -180,7 +172,7 @@ module.exports.updateTour = async (req, res, next) => {
         // id from url
         let id = req.params.id;
         if (!id) return next(new errorHandler("No tour id is given.Please try again.", 400));
-        const possiblefield = ["tourName", "country", "activity","accomodation", "region", "distance", "startPoint", "endPoint",
+        const possiblefield = ["tourName", "country", "grade", "activity","accomodation", "region", "distance", "startPoint", "endPoint",
             "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDAy", "transportation"];
 
         let updatedData = {};

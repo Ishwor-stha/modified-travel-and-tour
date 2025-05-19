@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-const slugify = require("slugify");
 const tourSchema = new mongoose.Schema({
     tourName: {
         type: "String",
@@ -75,6 +74,10 @@ const tourSchema = new mongoose.Schema({
     activity:{
         type:String,
         required:[true,"Activity field is required"]
+    },
+    grade:{
+        type:String,
+        required:[true,"The grade field is missing."]//challenging moderate easy
     },
    transportation:{
         type:String,
