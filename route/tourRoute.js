@@ -15,9 +15,9 @@ Router.route("/tour-admin/delete-tour/:id").delete(checkJwt, deleteTour);
 
 Router.route("/get-tour/:slug").get(getOneTour);
 
-Router.route("/book-tour").post(bookTour);
+// Router.route("/book-tour").post(bookTour);
 
-Router.route("/enquiry").post(enquiry);
+// Router.route("/enquiry").post(enquiry);
 
 
 module.exports = Router;

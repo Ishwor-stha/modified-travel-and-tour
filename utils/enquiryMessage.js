@@ -1,4 +1,4 @@
-module.exports.enquiryMessage = (name, email, phone, contact2, question) => {
+module.exports.enquiryMessage = (name, email, contact, startDate, question,country) => {
     return `
 <!DOCTYPE html>
 <html lang="en">
@@ -70,8 +70,9 @@ module.exports.enquiryMessage = (name, email, phone, contact2, question) => {
             <div class="details">
                 <p><strong>Client Name:</strong> ${name}</p>
                 <p><strong>Email:</strong> ${email}</p>
-                <p><strong>Phone Number:</strong> ${phone}</p>
-                <p><strong>Secondary Number:</strong> ${contact2}</p>
+                <p><strong>Phone Number:</strong> ${contact}</p>
+                <p><strong>Start Date:</strong> ${startDate}</p>
+                <p><strong>Country:</strong> ${country}</p>
                 <p><strong>Question/Message:</strong></p>
                 <div class="message-box">${question}</div>
             </div>

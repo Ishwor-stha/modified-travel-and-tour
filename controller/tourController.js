@@ -12,6 +12,7 @@ const { isValidNumber } = require("../utils/isValidNumber");
 const { enquiryMessage } = require("../utils/enquiryMessage");
 const { successMessage } = require("../utils/sucessMessage");
 const slugify = require("slugify");
+const {capaitlize}=require("../utils/capitalizedFirstLetter")
 
 
 //@method :GET 
@@ -168,7 +169,7 @@ module.exports.postTour = async (req, res, next) => {
 // @desc:A controller to update the existing data of data base
 // @endpoint:localhost:6000/tour-admin/update-tour/:id
 module.exports.updateTour = async (req, res, next) => {
-    try {
+    try {   
         // id from url
         let id = req.params.id;
         if (!id) return next(new errorHandler("No tour id is given.Please try again.", 400));
@@ -276,39 +277,39 @@ module.exports.deleteTour = async (req, res, next) => {
 // @method POST
 // @desc:controller to send a message to owner if customer books the tour
 // @endpoint:localhost:6000/api/book-tour?tourName=*********
-module.exports.bookTour = async (req, res, next) => {
-    try {
+// module.exports.bookTour = async (req, res, next) => {
+//     try {
 
-        const { tourName } = req.query;
-        if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
-        // destructring objects form req.body
+//         const { tourName } = req.query;
+//         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
+//         // destructring objects form req.body
 
-        const { firstName, lastName, date, phone, secondPhone, email, time, age } = req.body;
-        // if data is missing
-        if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName || !secondPhone) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
-        const name = `${firstName} ${lastName}`;
-        // email validation falils
-        if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
-        //phone number validation fails
-        if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandler("Please enter valid phone number.", 400));
-        if (!isValidNepaliPhoneNumber(secondPhone)) return next(new errorHandler("Please enter valid phone number.", 400));
-        if (phone === secondPhone) return next(new errorHandler("Phone number must be different in both field.", 400));
-        const userDate = new Date(date)
-        const currentDate = new Date()
-        if (userDate < currentDate) return next(new errorHandler("Invalid booking date. Please select a future date.", 400));
-        // create message 
-        const message = bookMessage(name, tourName, date, phone, secondPhone, email, time, age);
+//         const { firstName, lastName, startDate,endDate,phone, secondPhone, email, time, age } = req.body;
+//         // if data is missing
+//         if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName || !secondPhone) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
+//         const name = `${firstName} ${lastName}`;
+//         // email validation falils
+//         if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
+//         //phone number validation fails
+//         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandler("Please enter valid phone number.", 400));
+//         if (!isValidNepaliPhoneNumber(secondPhone)) return next(new errorHandler("Please enter valid phone number.", 400));
+//         if (phone === secondPhone) return next(new errorHandler("Phone number must be different in both field.", 400));
+//         const userDate = new Date(date)
+//         const currentDate = new Date()
+//         if (userDate < currentDate) return next(new errorHandler("Invalid booking date. Please select a future date.", 400));
+//         // create message 
+//         const message = bookMessage(name, tourName, date, phone, secondPhone, email, time, age);
 
-        // send message to the email
-        await sendMessage(res, process.env.personal_message_gmail, "Tour Booking Alert", message);
-        // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
-        // send response
-        successMessage(res, "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour", 200);
+//         // send message to the email
+//         await sendMessage(res, process.env.personal_message_gmail, "Tour Booking Alert", message);
+//         // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
+//         // send response
+//         successMessage(res, "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour", 200);
 
-    } catch (error) {
-        return next(new errorHandler(error.message, error.statusCode || 500));
-    }
-}
+//     } catch (error) {
+//         return next(new errorHandler(error.message, error.statusCode || 500));
+//     }
+// }
 
 
 
@@ -319,20 +320,18 @@ module.exports.bookTour = async (req, res, next) => {
 module.exports.enquiry = async (req, res, next) => {
     try {
         // destructring name,email,contact,message from req.body
-        const { firstName, lastName, email, contact, contact2, question } = req.body;
+        const { fullName,startDate, email, country, contact, question } = req.body;
         // if field is missing 
-        if (!firstName || !lastName || !email || !contact || !question || !contact2) return next(new errorHandler("Some field is missing.Please fill up all the form.", 400));
+        if (!fullName || startDate || !email || !contact || !question || !country) return next(new errorHandler("Some field is missing.Please fill up all the form.", 400));
         // check email if it is valid or not
         if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         // check phone number if it is valid or not
         if (!isValidNepaliPhoneNumber(contact)) return next(new errorHandler("Please enter valid phone number.", 400));
-        if (!isValidNepaliPhoneNumber(contact2)) return next(new errorHandler("Please enter valid phone number.", 400));
-        if (contact === contact2) return next(new errorHandler("The phone number must be different in both field.", 400));
 
         // concat the first name and last name
-        const name = ` ${firstName} ${lastName}`;
+        const name =capaitlize(fullName)
         // create message template form enquiryMessage Function
-        const createMessage = enquiryMessage(name, email, contact, contact2, question);
+        const createMessage = enquiryMessage(name, email, contact, startDate, question,country);
         // Send message
 
         await sendMessage(res, process.env.NODEMAILER_USER, "Enquiry message", createMessage);//NOTE: ENTER THE REAL COMPANY EMAIL INSTEAD OF NODEMAILER USER.
