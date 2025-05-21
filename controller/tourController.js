@@ -115,7 +115,7 @@ module.exports.getOneTour = async (req, res, next) => {
         const { slug } = req.params;
         if (!slug) return next(new errorHandler("No slug given of tour.Please try again.", 400));
         const tour = await Tour.findOne({ slug: slug }, "");
-        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.", 404));
+        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.",404));
         res.status(200).json({
             status: true,
             tour
@@ -295,79 +295,84 @@ module.exports.deleteTour = async (req, res, next) => {
 // @method POST
 // @desc:controller to send a message to owner if customer books the tour
 // @endpoint:localhost:6000/api/book-tour?tourName=*********
-// module.exports.bookTour = async (req, res, next) => {
-//     try {
+module.exports.firstStepBookTour = async (req, res, next) => {
+    try {
 
-//         const { tourName } = req.query;
-//         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
-//         // destructring objects form req.body
+        const { tourName } = req.query;
+        if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
+        if(!req.body)return next(new errorHandler("Please provide body field to proceed further.",400));
+        let response
+        try {
+            response = await axios.get(`${process.env.URL}/api/get-tour-by-slug/${tourName}`)
+        } catch (error) {
+            return next(new errorHandler(error["response"].data["message"] || "Something went wrong",error.status || 500 ));
 
-//         const { firstName, lastName, startDate,endDate,phone, secondPhone, email, time, age } = req.body;
-//         // if data is missing
-//         if (!firstName || !lastName || !date || !phone || !email || !time || !age || !tourName || !secondPhone) return next(new errorHandler("All fields are required.Please fill the form again.", 400));
-//         const name = `${firstName} ${lastName}`;
-//         // email validation falils
-//         if (!validateEmail(email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
-//         //phone number validation fails
-//         if (!isValidNepaliPhoneNumber(phone)) return next(new errorHandler("Please enter valid phone number.", 400));
-//         if (!isValidNepaliPhoneNumber(secondPhone)) return next(new errorHandler("Please enter valid phone number.", 400));
-//         if (phone === secondPhone) return next(new errorHandler("Phone number must be different in both field.", 400));
-//         const userDate = new Date(date)
-//         const currentDate = new Date()
-//         if (userDate < currentDate) return next(new errorHandler("Invalid booking date. Please select a future date.", 400));
-//         // create message 
-//         const message = bookMessage(name, tourName, date, phone, secondPhone, email, time, age);
+        }
+        //optional fields [flightArrivalDate,flightDepartureDate,otherInformation]
+        const possiblefield=["startingDate","endingDate","fullName","email","country","contactNumber","emergencyContact","NumberofParticipants","totalPayment","payLater"];
+        const check=possiblefield.filter(key=> !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim()==="");
+        if(check.length !==0)return next(new errorHandler(`${check.join(",")} ${check.length>1?"fields are missing":"field is missing"}.`,400));
+        if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
+        let data={}
+        for(const key of possiblefield ){
+            data[key]=req.body[key]
+        }
+        const optionalFields= ["flightArrivalDate","flightDepartureDate","otherInformation"]
+        for(const key of optionalFields){
+            if(req.body[key]&&req.body[key].toString().trim()!==""){
+                data[key]=req.body[key]
+            }
+        }
+        res.status(200).json({
+            status:true,
+            message:"Your booking details.",
+            data
+        })
 
-//         // send message to the email
-//         await sendMessage(res, process.env.personal_message_gmail, "Tour Booking Alert", message);
-//         // await sendMessage(next, message, "Tour booking alert", process.env.personal_message_gmail, "Astrapi Travel");
-//         // send response
-//         successMessage(res, "Thank you for your booking! A confirmation email has been sent to Astrapi Travel and Tour", 200);
-
-//     } catch (error) {
-//         return next(new errorHandler(error.message, error.statusCode || 500));
-//     }
-// }
+    } catch (error) {
+        return next(new errorHandler(error.message, error.statusCode || 500));
+    }
+}
 
 
 
 // @method POST
 // @desc:controller to send a enquiry message to owner 
 // @endpoint:localhost:6000/api/ask-question
-// "contact2":"984555555",
+
 module.exports.enquiry = async (req, res, next) => {
     try {
         // destructring name,email,contact,message from req.body
         const tourId = req.query.tourId
-        if(!req.body)return next(new errorHandler(`fullName,startDate,email,country,contact,question field are missing.`, 400));
+        if (!req.body) return next(new errorHandler(`fullName,startDate,email,country,contact,question field are missing.`, 400));
         if (!tourId) return next(new errorHandler("The tour id is missing.", 400));
         let response
         let tour
         try {
-             response = await axios.get(`${process.env.URL}/api/get-tour/${tourId}`)
-             tour=response.data["tour"]
-             delete tour._id;
-             delete tour.__v;
-             delete tour.slug
+            response = await axios.get(`${process.env.URL}/api/get-tour/${tourId}`)
+            tour = response.data["tour"]
+            delete tour._id;
+            delete tour.__v;
+            delete tour.slug
         } catch (error) {
 
             return next(new errorHandler(error.response["data"].message, error.status || 500));
         }
-        
-        
-        const possiblefield=["fullName","startDate", "email", "country", "contact", "question" ]
-        const check=possiblefield.filter(key=> !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim()==="")
+
+
+        const possiblefield = ["fullName", "startDate", "email", "country", "contact", "question"]
+        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "")
         // if field is missing 
-        if(check.length!==0)return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
+        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
         // check email if it is valid or not
         if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         // check phone number if it is valid or not
         if (!isValidNepaliPhoneNumber(req.body["contact"])) return next(new errorHandler("Please enter valid phone number.", 400));
 
         // concat the first name and last name
-        const name =capaitlize(req.body["fullName"])
+        const name = capaitlize(req.body["fullName"])
         // create message template form enquiryMessage Function
-        const createMessage = enquiryMessage(name, req.body["email"], req.body["contact"], req.body["startDate"], req.body["question"],req.body["country"],tour);
+        const createMessage = enquiryMessage(name, req.body["email"], req.body["contact"], req.body["startDate"], req.body["question"], req.body["country"], tour);
         // Send message
         await sendMessage(res, process.env.NODEMAILER_USER, "Enquiry message", createMessage);//NOTE: ENTER THE REAL COMPANY EMAIL INSTEAD OF NODEMAILER USER.
         // send sucess response

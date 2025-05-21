@@ -14,7 +14,7 @@ Router.route("/tour-admin/update-tour/:id").patch(checkJwt, /*upload.array('imag
 
 Router.route("/tour-admin/delete-tour/:id").delete(checkJwt, deleteTour);
 
-Router.route("/get-tour/:slug").get(getOneTour);
+Router.route("/get-tour-by-slug/:slug").get(getOneTour);
 
 
 

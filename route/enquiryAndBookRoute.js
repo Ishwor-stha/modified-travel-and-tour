@@ -1,12 +1,12 @@
 const express = require("express");
 const Router = express.Router();
-const {bookTour,enquiry} = require("../controller/tourController.js");
+const {firstStepBookTour,enquiry} = require("../controller/tourController.js");
 const { checkJwt } = require("../middlewares/checkjwt.js");
 
 /*********************************Route****************************************************** */
 
 
-// Router.route("/book-tour").post(bookTour);
+Router.route("/first-book-tour").post(firstStepBookTour);
 
 Router.route("/enquiry").post(enquiry);
 
