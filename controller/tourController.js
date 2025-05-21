@@ -313,21 +313,23 @@ module.exports.firstStepBookTour = async (req, res, next) => {
         const check=possiblefield.filter(key=> !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim()==="");
         if(check.length !==0)return next(new errorHandler(`${check.join(",")} ${check.length>1?"fields are missing":"field is missing"}.`,400));
         if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
-        let data={}
+        let data={};
         for(const key of possiblefield ){
+            if(key==="fullName")req.body[key]=capaitlize(req.body[key]);
             data[key]=req.body[key]
         }
-        const optionalFields= ["flightArrivalDate","flightDepartureDate","otherInformation"]
+        const optionalFields= ["flightArrivalDate","flightDepartureDate","otherInformation"];
+        
         for(const key of optionalFields){
             if(req.body[key]&&req.body[key].toString().trim()!==""){
-                data[key]=req.body[key]
+                data[key]=req.body[key];
             }
         }
         res.status(200).json({
             status:true,
             message:"Your booking details.",
             data
-        })
+        });
 
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
