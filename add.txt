@@ -1,8 +1,0 @@
-rating
-booking (db)
-user login
-whatsapp
-sending email(offering)
-blog by ser
-image
-payment(esewa,khalti,visa)
