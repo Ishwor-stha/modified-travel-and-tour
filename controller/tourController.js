@@ -12,8 +12,9 @@ const { isValidNumber } = require("../utils/isValidNumber");
 const { enquiryMessage } = require("../utils/enquiryMessage");
 const { successMessage } = require("../utils/sucessMessage");
 const slugify = require("slugify");
-const { capaitlize } = require("../utils/capitalizedFirstLetter")
-const axios = require("axios")
+const { capaitlize } = require("../utils/capitalizedFirstLetter");
+const axios = require("axios");
+const crypto = require("crypto");
 
 
 //@method :GET 
@@ -115,7 +116,7 @@ module.exports.getOneTour = async (req, res, next) => {
         const { slug } = req.params;
         if (!slug) return next(new errorHandler("No slug given of tour.Please try again.", 400));
         const tour = await Tour.findOne({ slug: slug }, "");
-        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.",404));
+        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.", 404));
         res.status(200).json({
             status: true,
             tour
@@ -292,50 +293,6 @@ module.exports.deleteTour = async (req, res, next) => {
 }
 
 
-// @method POST
-// @desc:controller to send a message to owner if customer books the tour
-// @endpoint:localhost:6000/api/book-tour?tourName=*********
-module.exports.firstStepBookTour = async (req, res, next) => {
-    try {
-
-        const { tourName } = req.query;
-        if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
-        if(!req.body)return next(new errorHandler("Please provide body field to proceed further.",400));
-        let response
-        try {
-            response = await axios.get(`${process.env.URL}/api/get-tour-by-slug/${tourName}`)
-        } catch (error) {
-            return next(new errorHandler(error["response"].data["message"] || "Something went wrong",error.status || 500 ));
-
-        }
-        //optional fields [flightArrivalDate,flightDepartureDate,otherInformation]
-        const possiblefield=["startingDate","endingDate","fullName","email","country","contactNumber","emergencyContact","NumberofParticipants","totalPayment","payLater"];
-        const check=possiblefield.filter(key=> !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim()==="");
-        if(check.length !==0)return next(new errorHandler(`${check.join(",")} ${check.length>1?"fields are missing":"field is missing"}.`,400));
-        if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
-        let data={};
-        for(const key of possiblefield ){
-            if(key==="fullName")req.body[key]=capaitlize(req.body[key]);
-            data[key]=req.body[key]
-        }
-        const optionalFields= ["flightArrivalDate","flightDepartureDate","otherInformation"];
-        
-        for(const key of optionalFields){
-            if(req.body[key]&&req.body[key].toString().trim()!==""){
-                data[key]=req.body[key];
-            }
-        }
-        res.status(200).json({
-            status:true,
-            message:"Your booking details.",
-            data
-        });
-
-    } catch (error) {
-        return next(new errorHandler(error.message, error.statusCode || 500));
-    }
-}
-
 
 
 // @method POST
@@ -382,5 +339,165 @@ module.exports.enquiry = async (req, res, next) => {
 
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
+    }
+}
+
+
+// @method POST
+// @desc:controller to send a message to owner if customer books the tour
+// @endpoint:localhost:6000/api/book-tour?tourName=*********
+module.exports.bookTour = async (req, res, next) => {
+    try {
+
+        const { tourName } = req.query;
+        if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
+        if (!req.body) return next(new errorHandler("Please provide body field to proceed further.", 400));
+        let response
+        try {
+            response = await axios.get(`${process.env.URL}/api/get-tour-by-slug/${tourName}`)
+        } catch (error) {
+            return next(new errorHandler(error["response"].data["message"] || "Something went wrong", error.status || 500));
+
+        }
+        const possiblefield = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
+        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
+        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are missing" : "field is missing"}.`, 400));
+        if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
+        let data = {};
+        for (const key of possiblefield) {
+            if (key === "fullName") req.body[key] = capaitlize(req.body[key]);
+            data[key] = req.body[key]
+        }
+        const optionalFields = ["flightArrivalDate", "flightDepartureDate", "otherInformation"];
+
+        for (const key of optionalFields) {
+            if (req.body[key] && req.body[key].toString().trim() !== "") {
+                data[key] = req.body[key];
+            }
+        }
+        req.session.bookingData = data
+        res.status(200).json({
+            status: true,
+            message: "Your booking details.",
+            data
+        });
+
+    } catch (error) {
+        return next(new errorHandler(error.message, error.statusCode || 500));
+    }
+}
+
+module.exports.payWithEsewa = async (req, res, next) => {
+    try {
+        const bookingData = req.session.bookingData
+        const amount = bookingData["advancePayment"];
+        const tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0;
+
+        if (!amount) return next(new errorHandler("No amount is given.", 400));
+        if (amount <= 0) return errorHandler("Amount must be above 0.", 400);
+        const total_amount = parseFloat(amount) + parseFloat(tax_amount) + parseFloat(product_service_charge) + parseFloat(product_delivery_charge);
+        const transaction_uuid = Date.now();
+        const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
+        const signature = crypto.createHmac('sha256', process.env.SECRET_KEY).update(message).digest('base64');
+        const paymentData = {
+            amount: parseFloat(amount),
+            tax_amount: parseFloat(tax_amount),
+            total_amount: parseFloat(total_amount),
+            product_service_charge: parseFloat(product_service_charge),
+            product_delivery_charge: parseFloat(product_delivery_charge),
+            transaction_uuid,
+            product_code: process.env.PRODUCT_CODE,
+            success_url: process.env.SUCCESS_URL,
+            failure_url: process.env.FAILURE_URL,
+            signed_field_names: 'total_amount,transaction_uuid,product_code',
+            signature: signature,
+        };
+
+        // console.log(paymentData);
+        
+
+        // const pay = await axios.post(process.env.BASE_URL, paymentData, {
+        //     headers: {
+        //         'Content-Type': 'application/json',
+        //     }
+        // });
+
+
+        // // console.log(pay.request.res.responseUrl)
+        // res.redirect(pay.request.res.responseUrl)
+        res.status(200).json({
+            status:true,
+            paymentData
+        })
+
+
+
+    } catch (error) {
+        return next(new errorHandler(error.message, error.statusCode || 500));
+    }
+}
+
+
+module.exports.paymentSucess = async (req, res, next) => {
+    try {
+        if (!req.query.data) return next(new errorHandler("Server error.", error.statusCode || 500))
+        const encodedData = req.query.data;
+        const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
+        const TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
+        const message = `transaction_code=${decodedData.transaction_code},status=${decodedData.status},total_amount=${TotalAmt},
+        transaction_uuid=${decodedData.transaction_uuid},product_code=${PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
+
+        const hash = crypto.createHmac("sha256", SECRET_KEY).update(message).digest("base64");
+
+        if (hash !== decodedData.signature) {
+            return next(new errorHandler("Invalid signature.", error.statusCode || 500))
+        }
+
+        const response = await axios.get(STATUS_CHECK, {
+            headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json"
+            },
+            params: {
+                product_code: PRODUCT_CODE,
+                total_amount: TotalAmt,
+                transaction_uuid: decodedData.transaction_uuid
+            }
+        });
+
+        const { status, transaction_uuid, total_amount } = response.data;
+        if (status !== "COMPLETE" || transaction_uuid !== decodedData.transaction_uuid || Number(total_amount) !== Number(TotalAmt)) {
+            return next(new errorHandler("Invalid transaction details", error.statusCode || 500))
+
+        }
+        //after verification store something to the database ie(payemnt details etc) in my example i wil simply send success html file 
+        console.log(response)
+        // console.log(response.data)
+        // return res.status(200).json({
+        //     status: true,
+        //     message: "Success",
+        //     transaction_details: {
+        //         status: response.data.status,
+        //         ref_id: response.data.ref_id,
+        //         amount: response.data.total_amount
+
+        //     }
+        // });
+    } catch (error) {
+        return next(new errorHandler(error.message, error.statusCode || 500))
+    }
+}
+
+module.exports.paymentFailure = async (req, res, next) => {
+    try {
+        res.status(500).json({
+            status: false,
+            message: 'Transaction failed.Please try again later.',
+        });
+
+
+    } catch (error) {
+        return next(new errorHandler(error.message, error.statusCode || 500))
+
     }
 }

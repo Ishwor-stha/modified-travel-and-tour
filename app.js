@@ -9,6 +9,7 @@ const errorController = require('./controller/errorController');
 const bookigAndEnquiryRoute=require("./route/enquiryAndBookRoute")
 const {sanitize}=require("./utils/filter")
 const app = express();
+const session=require("express-session");
 // security packages
 const {limiter} = require("./utils/rateLimit");
 const helmet = require('helmet');
@@ -40,6 +41,16 @@ app.use(cookieParser());
 app.use((req,res,next)=>{
     sanitize(req,res,next);
 })
+app.use(session({
+    secret: process.env.SessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: false,
+        maxAge: 1000 * 60 * 60,
+        httpOnly: true,
+    },
+}));
 
 // Function to connect to the database
 databaseConnect().catch(err=>{
