@@ -380,7 +380,8 @@ module.exports.bookTour = async (req, res, next) => {
             message: "Your booking details.",
             status: true,
             tourDetails: response["data"],
-            data
+            data,
+            paymentUrl:process.env.BASE_URL
         });
 
     } catch (error) {
