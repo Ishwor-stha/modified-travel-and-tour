@@ -15,6 +15,7 @@ const {limiter} = require("./utils/rateLimit");
 const helmet = require('helmet');
 const cors = require('cors');
 const {preventHPP}=require("./utils/preventHpp");
+const errorHandling = require('./utils/errorHandling');
 
 const corsOptions = {
     origin:[process.env.URL1,process.env.URL2],
@@ -54,7 +55,7 @@ app.use(session({
 
 // Function to connect to the database
 databaseConnect().catch(err=>{
-    app.use((req,res,next)=>next(err));
+    app.use((req,res,next)=>next(new errorHandling(err.message,err.statusCode ||500)));
 });
 
 // Mount the tour route

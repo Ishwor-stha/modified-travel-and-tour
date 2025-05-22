@@ -375,11 +375,11 @@ module.exports.bookTour = async (req, res, next) => {
             }
         }
         req.session.bookingData = data
-        req.session.tourData = response
+        req.session.tourData = response["data"];
         res.status(200).json({
-            status: true,
-            tourDetails: response,
             message: "Your booking details.",
+            status: true,
+            tourDetails: response["data"],
             data
         });
 
