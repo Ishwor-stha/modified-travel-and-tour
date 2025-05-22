@@ -4,7 +4,8 @@ const descriptionSchema = new mongoose.Schema({
   tourId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "tour",
-    required: true
+    required: true,
+    unique:true
   },
   shortDescription: {
     type: String,
@@ -27,3 +28,4 @@ const descriptionSchema = new mongoose.Schema({
 const Description = mongoose.model("Description", descriptionSchema);
 
 module.exports = Description;
+

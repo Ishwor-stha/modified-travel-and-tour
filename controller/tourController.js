@@ -13,6 +13,7 @@ const { enquiryMessage } = require("../utils/enquiryMessage");
 const { successMessage } = require("../utils/sucessMessage");
 const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
+const Description = require("../modles/descriptionModel")
 const axios = require("axios");
 
 //@method :GET 
@@ -49,7 +50,7 @@ module.exports.getTours = async (req, res, next) => {
 
 
         // Fetching the data from the database using $or condition for flexible matching
-        let tourQuery = Tour.find({},"-popularity");
+        let tourQuery = Tour.find({}, "-popularity");
         // console.log(condition)
 
         if (condition.length > 0) {
@@ -89,12 +90,28 @@ module.exports.getTours = async (req, res, next) => {
     }
 };
 
+module.exports.getOneTourDescriptionId = async (req, res, next) => {
+    try {
+        const { tourId } = req.params;
+        if (!tourId) return next(new errorHandler("No id given of tour.Please try again.", 400));
+        const tourDescription = await Description.findOne({"tourId":tourId});
+        if (!tourDescription|| Object.keys(tourDescription).length === 0) return next(new errorHandler("No tour description found.Please try again.", 404));
+        res.status(200).json({
+            status: true,
+            tourDescription
+        });
+
+    } catch (error) {
+        return next(new errorHandler(error.message, error.statusCode || 500));
+    }
+}
+
 
 module.exports.getOneTourById = async (req, res, next) => {
     try {
         const { id } = req.params;
         if (!id) return next(new errorHandler("No id given of tour.Please try again.", 400));
-        const tour = await Tour.findById(id,"-popularity");
+        const tour = await Tour.findById(id, "-popularity");
         if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.", 404));
         res.status(200).json({
             status: true,
@@ -159,7 +176,7 @@ module.exports.postTour = async (req, res, next) => {
 
 
         }
-        if(req.body.popularity) data["popularity"]=req.body["popularity"];
+        if (req.body.popularity) data["popularity"] = req.body["popularity"];
         data["slug"] = slugify(req.body["tourName"]);
 
         const create = await Tour.create(data);
@@ -177,6 +194,32 @@ module.exports.postTour = async (req, res, next) => {
 
         if (error.code === 11000 || error.code === "E11000") {
             return next(new errorHandler("The tour with this name is already exists.", 400));
+        }
+        return next(new errorHandler(error.message, error.statusCode || 500));
+    }
+};
+
+module.exports.createDescriptionOfTour = async(req, res, next) => {
+    try {
+        const {tourId}=req.params;
+        if(!tourId)return next(new errorHandler("Tour id is not given.Please provide tour id.",400));
+        if(!req.body)return next(new errorHandler("No body is given.",400));
+        req.body["tourId"]=tourId;
+        const possiblefield = ["tourId","shortDescription","detailedDescription","highlights"];
+        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
+        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
+        let data = {}
+        for (const key of possiblefield) {
+            data[key] = req.body[key];
+        }
+        const create = await Description.create(data);
+        if (!create) return next(new errorHandler("Cannot create the description of tour.Please try again later", 500));
+        successMessage(res, `Description created sucessfully.`, 200);
+
+    } catch (error) {
+
+        if (error.code === 11000 || error.code === "E11000") {
+            return next(new errorHandler("The tour description of this touur is already exists.", 400));
         }
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
@@ -265,6 +308,40 @@ module.exports.updateTour = async (req, res, next) => {
         next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
     }
 };
+module.exports.updateTourDescription = async (req, res, next) => {
+    try {
+        // id from url
+        let {tourId} = req.params.id;
+        if (!tourId) return next(new errorHandler("No tour id is given.Please try again.", 400));
+        const possiblefield = ["tourId","shortDescription","detailedDescription","highlights"];
+        let updatedData = {};
+
+
+        for (key of Object.keys(req.body)) {
+            if (possiblefield.includes(key)) {
+                updatedData[key] = req.body[key];
+            }
+        }
+       
+        // querying to database
+        const updateTour = await Description.findOneAndUpdate({"tourId":tourId}, updatedData);
+        // console.log(updateTour)
+        if (!updateTour || Object.keys(updateTour).length === 0) {
+         
+            return next(new errorHandler("Cannot update Details of tour . Please try again later.", 500));
+        }
+
+    
+        // sending response
+        res.status(200).json({
+            status: true,
+            message:"Details Updated sucessfully"
+        });
+    } catch (error) {
+        next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
+    }
+};
+
 
 // @method DELETE
 // @desc:controller to delete tour
@@ -276,7 +353,9 @@ module.exports.deleteTour = async (req, res, next) => {
         if (!id) return next(new errorHandler("Tour id is missing.Please try again. ", 400));
         // querying the database
         const del = await Tour.findByIdAndDelete(id);
+        const deleteDescrtiption=await Description.findOneAndDelete({"tourId":id});
         if (!del || Object.keys(del).length <= 0) return next(new errorHandler("No Tour found.Please try again.", 404));
+        if (!deleteDescrtiption || Object.keys(deleteDescrtiption).length <= 0) return next(new errorHandler("Cannot delete description of tour.", 404));
         // sending response
         res.status(200).json({
             status: true,
@@ -381,7 +460,7 @@ module.exports.bookTour = async (req, res, next) => {
             status: true,
             tourDetails: response["data"],
             data,
-            paymentUrl:process.env.BASE_URL
+            paymentUrl: process.env.BASE_URL
         });
 
     } catch (error) {
