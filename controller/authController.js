@@ -29,7 +29,7 @@ module.exports.createAdmin = async (req, res, next) => {
         const message = doValidations(req.body.email, req.body.phone, req.body.password, req.body.confirmPassword);
         if (message) return next(new errorHandling(message, 400));
         const data = {}
-        
+
         req.body["name"] = capaitlize(req.body.name)
         for (let key in requireFieds) {
             key = requireFieds[key];
@@ -58,10 +58,10 @@ module.exports.updateAdmin = async (req, res, next) => {
     try {
         const userId = req.user.userId;//from checkJwt controller
         if (!userId) return next(new errorHandling("Something went wrong.", 400));
-        if(!req.body.currentPassword || req.body["currentPassword"].trim()===""  )return next(new errorHandling("Please enter current password to update details",400));
-        const checkPass=await User.findById(userId,"+password +name")
-        const check=await bcrypt.compare(req.body.currentPassword, checkPass.password);
-        if(!check)return next(new errorHandling("Password doesnot match.",400));
+        if (!req.body.currentPassword || req.body["currentPassword"].trim() === "") return next(new errorHandling("Please enter current password to update details", 400));
+        const checkPass = await User.findById(userId, "+password +name")
+        const check = await bcrypt.compare(req.body.currentPassword, checkPass.password);
+        if (!check) return next(new errorHandling("Password doesnot match.", 400));
         if (!req.body) return next(new errorHandling("Please provide the body.", 400));
         const possibleFields = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
         const filterField = Object.keys(req.body).filter(key => possibleFields.includes(key) && req.body[key] && req.body[key].toString().trim() !== "");
@@ -70,21 +70,21 @@ module.exports.updateAdmin = async (req, res, next) => {
         if (message) return next(new errorHandling(message, 400));
         const updatedData = {}
         for (const key of filterField) {
-            if(key==="name") req.body[key]=capaitlize(req.body["name"])
+            if (key === "name") req.body[key] = capaitlize(req.body["name"])
             if (key === "password") req.body[key] = await bcrypt.hash(req.body[key], 10);
-            if(key==="confirmPassword")continue;
+            if (key === "confirmPassword") continue;
             updatedData[key] = req.body[key];
         };
 
         const updateUser = await User.findByIdAndUpdate(userId, updatedData);
-        if(!updateUser) return next(new errorHandling("Cannot update the user.Please try again later",500));
-        successMessage(res,`${checkPass.name}User updated sucessfully`,200);
+        if (!updateUser) return next(new errorHandling("Cannot update the user.Please try again later", 500));
+        successMessage(res, `${checkPass.name}User updated sucessfully`, 200);
 
 
 
     } catch (error) {
         // console.log(error)code: 
-        if(error.code===11000)return next(new errorHandling("Email is already in use please try different email.",400))
+        if (error.code === 11000) return next(new errorHandling("Email is already in use please try different email.", 400))
         return next(new errorHandling(error.message, error.statusCode || 500))
     }
 }
@@ -94,21 +94,21 @@ module.exports.updateAdmin = async (req, res, next) => {
 // @endpoint: localhost:6000/admin/delete-admin
 module.exports.deleteAdmin = async (req, res, next) => {
     try {
-       const userId = req.user.userId;//from checkJwt controller
+        const userId = req.user.userId;//from checkJwt controller
         if (!userId) return next(new errorHandling("Something went wrong.", 400));
-        if(!req.body)return next(new errorHandling("Please provide currentPassword.", 400));
-        if(!req.body.currentPassword || req.body["currentPassword"].trim()===""  )return next(new errorHandling("Please enter current password to delete your account.",400));
-        
-        const checkPass=await User.findById(userId,"+password +name")
-        const check=await bcrypt.compare(req.body.currentPassword, checkPass.password);
-        if(!check)return next(new errorHandling("Password doesnot match.",400));
+        if (!req.body) return next(new errorHandling("Please provide currentPassword.", 400));
+        if (!req.body.currentPassword || req.body["currentPassword"].trim() === "") return next(new errorHandling("Please enter current password to delete your account.", 400));
+
+        const checkPass = await User.findById(userId, "+password +name")
+        const check = await bcrypt.compare(req.body.currentPassword, checkPass.password);
+        if (!check) return next(new errorHandling("Password doesnot match.", 400));
         const del = await User.findByIdAndUpdate(userId, { isDeleted: true });
         // check if admin is deleted
         // if (!del) {
         if (!del) {
             throw new errorHandling("Failed to remove admin.Please try again.", 500);
         }
-          res.clearCookie('auth_token', {
+        res.clearCookie('auth_token', {
             httpOnly: true,
             sameSite: "Strict"
         });
@@ -121,20 +121,20 @@ module.exports.deleteAdmin = async (req, res, next) => {
 
 }
 
-module.exports.getAdminById=async(req,res,next)=>{
-    try{
-       
-        const userId=req.user.userId;
-        const user=await User.findById(userId,"-password -isDeleted -role")
-        if(!user)return next(new errorHandling(`Cannot get ${req.user.role} from given id.`,400));
-        res.status(200).json({
-            status:true,
-            userDetail:user
-        })
-        
+module.exports.getAdminById = async (req, res, next) => {
+    try {
 
-    }catch(error){
-        return next(new errorHandling(error.message,error.statusCode ||500));
+        const userId = req.user.userId;
+        const user = await User.findById(userId, "-password -isDeleted -role")
+        if (!user) return next(new errorHandling(`Cannot get ${req.user.role} from given id.`, 400));
+        res.status(200).json({
+            status: true,
+            userDetail: user
+        })
+
+
+    } catch (error) {
+        return next(new errorHandling(error.message, error.statusCode || 500));
     }
 }
 
@@ -145,7 +145,7 @@ module.exports.getAdminById=async(req,res,next)=>{
 // @endpoint: localhost:6000/admin/get-admins
 module.exports.getAllAdmin = async (req, res, next) => {
     try {
-        
+
         let { page = 1 } = req.query;
         page = Math.ceil(page);
         const limit = 10;
@@ -172,15 +172,15 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
 
 module.exports.getAdminByEmailOrName = async (req, res, next) => {
- 
+
     try {
 
         if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
         let details;
-   
+
         if (req.query.email) {
             if (!validateEmail(req.query.email)) return next(new errorHandling("Invalid email address.Please use valid email address", 400));
-            details = await User.find({ "email": req.query.email ,isDeleted:"false"},"-_id -password -role -isDeleted");
+            details = await User.find({ "email": req.query.email, isDeleted: false }, "-_id -password -role -isDeleted");
         }
 
         if (req.query.name) {
@@ -188,7 +188,13 @@ module.exports.getAdminByEmailOrName = async (req, res, next) => {
             // console.log(checkName)
             if (checkName.length === 1 && checkName[0] === " ") return next(new errorHandling("Invalid name.Please use valid name.", 400))
             const name = req.query.name.trim()
-            details = await User.find({ "name": { $regex: new RegExp(`^${name}$`, 'i') } ,isDeleted:"false"},"-_id -password -role -isDeleted");
+            details = await User.find(
+                {
+                    "name": { $regex: new RegExp(`^${name}$`, 'i') },
+                    isDeleted: false
+                },
+                "-_id -password -role -isDeleted"
+            );
         }
         if (!details || Object.keys(details).length === 0) return next(new errorHandling(`No admin found by given ${req.query.email ? "email" : "name"}.`, 404));
         res.status(200).json({
@@ -236,7 +242,7 @@ module.exports.logout = (req, res, next) => {
 // @method delete
 // @desc:controller to delete new admin
 // @endpoint: localhost:6000/admin/remove-admin
-module.exports.removeAdmin= async (req, res, next) => {
+module.exports.removeAdmin = async (req, res, next) => {
     try {
         const userId = req.params.id;//from url
         if (!userId) return next(new errorHandling(`No ${capaitlize(req.user.role)} id is provided please try again.`, 400));
