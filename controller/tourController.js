@@ -4,7 +4,7 @@ const errorHandler = require("../utils/errorHandling");
 // const fs = require("fs");
 // const path = require("path");
 const { validateEmail } = require("../utils/emailValidation");
-const { bookMessage } = require("../utils/bookingMessage");
+// const { bookMessage } = require("../utils/bookingMessage");
 const { isValidNepaliPhoneNumber } = require("../utils/validatePhoneNumber");
 // const sendMessage = require("../utils/sendMessage");
 const { sendMessage } = require("../utils/nodemailer");
@@ -159,6 +159,7 @@ module.exports.postTour = async (req, res, next) => {
 
 
         }
+        if(req.body.popularity) data["popularity"]=req.body["popularity"];
         data["slug"] = slugify(req.body["tourName"]);
 
         const create = await Tour.create(data);
