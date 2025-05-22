@@ -15,7 +15,8 @@ const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const axios = require("axios");
 const crypto = require("crypto");
-
+const { bookingMessageUser } = require("../utils/bookingMessageUser");
+const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
 
 //@method :GET 
 //@Endpoint: localhost:6000/get-tours
@@ -376,8 +377,10 @@ module.exports.bookTour = async (req, res, next) => {
             }
         }
         req.session.bookingData = data
+        req.session.tourData = response
         res.status(200).json({
             status: true,
+            tourDetails: response,
             message: "Your booking details.",
             data
         });
@@ -414,8 +417,8 @@ module.exports.payWithEsewa = async (req, res, next) => {
         };
 
         // console.log(paymentData);
-        
 
+        // console.log(process.env.BASE_URL)
         // const pay = await axios.post(process.env.BASE_URL, paymentData, {
         //     headers: {
         //         'Content-Type': 'application/json',
@@ -423,10 +426,10 @@ module.exports.payWithEsewa = async (req, res, next) => {
         // });
 
 
-        // // console.log(pay.request.res.responseUrl)
+        // console.log(pay.request.res.responseUrl)
         // res.redirect(pay.request.res.responseUrl)
         res.status(200).json({
-            status:true,
+            status: true,
             paymentData
         })
 
@@ -453,13 +456,13 @@ module.exports.paymentSucess = async (req, res, next) => {
             return next(new errorHandler("Invalid signature.", error.statusCode || 500))
         }
 
-        const response = await axios.get(STATUS_CHECK, {
+        const response = await axios.get(process.env.STATUS_CHECK, {
             headers: {
                 Accept: "application/json",
                 "Content-Type": "application/json"
             },
             params: {
-                product_code: PRODUCT_CODE,
+                product_code: process.env.PRODUCT_CODE,
                 total_amount: TotalAmt,
                 transaction_uuid: decodedData.transaction_uuid
             }
@@ -470,19 +473,49 @@ module.exports.paymentSucess = async (req, res, next) => {
             return next(new errorHandler("Invalid transaction details", error.statusCode || 500))
 
         }
+        const userData= req.session.bookingData
+        const tourData= req.session.tourData
+        if(!userData || !tourData)return next(new errorHandler("User data or booking data is missing.",400));
         //after verification store something to the database ie(payemnt details etc) in my example i wil simply send success html file 
-        console.log(response)
-        // console.log(response.data)
-        // return res.status(200).json({
-        //     status: true,
-        //     message: "Success",
-        //     transaction_details: {
-        //         status: response.data.status,
-        //         ref_id: response.data.ref_id,
-        //         amount: response.data.total_amount
 
-        //     }
-        // });
+        // console.log(response.data)
+        const htmlMessageUser = bookingMessageUser({
+            userData ,
+            tourData,
+            transaction_uuid: response.data.transaction_uuid,
+            ref_id: response.data.ref_id,
+            amount: response.data.total_amount,
+            advancePayment: userData.advancePayment,
+            laterPayment: userData.laterPayment,
+            bookingDate: new Date().toLocaleDateString()
+        });
+
+        const htmlMessageAdmin = bookingMessageAdmin({
+            userData,
+            tourData,
+            transaction_uuid: response.data.transaction_uuid,
+            ref_id: response.data.ref_id,
+            amount: response.data.total_amount,
+            advancePayment: userData.advancePayment,
+            laterPayment: userData.payLater,
+            bookingDate: new Date().toLocaleDateString()
+        });
+        // message sent to user
+       await sendMessage(res,userData.email,"Payment Details",htmlMessageUser);
+       await sendMessage(res,process.env.NODEMAILER_USER,"Payment Details",htmlMessageAdmin);
+
+        return res.status(200).json({
+            status: true,
+            message: "Success",
+            tourData: req.session.tourData,
+            userData: req.session.bookingData,
+            transaction_details: {
+                status: response.data.status,
+                ref_id: response.data.ref_id,
+                amount: response.data.total_amount
+
+            }
+        });
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500))
     }
