@@ -176,7 +176,6 @@ module.exports.getAdminByEmailOrName = async (req, res, next) => {
     try {
 
         if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
-        if (!req.query.type) return next(new errorHandling("Invalid request please specify type.", 400));
         let details;
    
         if (req.query.email) {
