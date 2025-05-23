@@ -204,7 +204,7 @@ module.exports.paymentSucess = async (req, res, next) => {
         // message sent to user
        await sendMessage(res,userData.email,"Payment Details",htmlMessageUser);
        await sendMessage(res,process.env.NODEMAILER_USER,"Payment Details",htmlMessageAdmin);
-       res.status().json({
+       res.status(200).json({
         status:true,
         message:"Payment sucessfull"
        })

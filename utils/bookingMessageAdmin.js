@@ -70,7 +70,7 @@ module.exports.bookingMessageAdmin = ({
         <table class="details-table">
           <tr>
             <td class="label">Customer Name:</td>
-            <td>${userData.name}</td>
+            <td>${userData.fullName}</td>
           </tr>
           <tr>
             <td class="label">Email:</td>
@@ -78,7 +78,11 @@ module.exports.bookingMessageAdmin = ({
           </tr>
           <tr>
             <td class="label">Phone:</td>
-            <td>${userData.phone || 'N/A'}</td>
+            <td>${userData.contactNumber || 'N/A'}</td>
+          </tr>
+          <tr>
+            <td class="label">Emergency Phone:</td>
+            <td>${userData.emergencyContact || 'N/A'}</td>
           </tr>
           <tr>
             <td class="label">Tour Package:</td>
