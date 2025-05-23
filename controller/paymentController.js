@@ -159,6 +159,7 @@ module.exports.paymentSucess = async (req, res, next) => {
         const encodedData = req.query.data;
 
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
+        const TotalAmt = decodedData["total_amount"].replace(/,/g, '')
 
         const response = await axios.get(process.env.STATUS_CHECK, {
             headers: {
