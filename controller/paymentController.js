@@ -89,7 +89,7 @@ module.exports.paymentSucess = async (req, res, next) => {
 
         const { status, transaction_uuid, total_amount } = response.data;
         if (status !== "COMPLETE" || transaction_uuid !== decodedData.transaction_uuid || Number(total_amount) !== Number(TotalAmt)) {
-            return next(new errorHandler("Invalid transaction details", error.statusCode || 500))
+            return next(new errorHandler("Invalid transaction details", 500))
 
         }
         const userData= req.session.bookingData
