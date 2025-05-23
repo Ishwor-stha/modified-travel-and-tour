@@ -57,13 +57,15 @@ app.use(session({
 }));
 
 // Function to connect to the database
-const conn = async () => {
-    await databaseConnect().catch(err => {
-        app.use((req, res, next) => next(new errorHandling(err.message, err.statusCode || 500)));
-    });
-
-}
-conn()
+(async () => {
+  try {
+    await databaseConnect(); // Wait for MongoDB connection
+  } catch (err) {
+    console.error('DB connection failed:', err);
+    // Exit the process if DB connection fails
+    process.exit(1);
+  }
+})();
 
 // Mount the tour route
 app.use("/api/", tourRoute);
