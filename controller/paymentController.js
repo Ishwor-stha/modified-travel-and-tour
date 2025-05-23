@@ -62,7 +62,7 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 module.exports.paymentSucess = async (req, res, next) => {
     try {
-        console.log(req.query.data)
+        
 
         if (!req.query.data) return next(new errorHandler("Server error.",500))
         const encodedData = req.query.data;
@@ -78,6 +78,11 @@ module.exports.paymentSucess = async (req, res, next) => {
         const hash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(message).digest("base64");
 
         if (hash !== decodedData.signature) {
+            return res.json({
+                data:req.query.data,
+                decodedData,
+                
+            })
             return next(new errorHandler("Invalid signature.",  500))
         }
 
