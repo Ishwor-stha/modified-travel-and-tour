@@ -62,9 +62,15 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 module.exports.paymentSucess = async (req, res, next) => {
     try {
+        console.log(req.query.data)
+
         if (!req.query.data) return next(new errorHandler("Server error.",500))
         const encodedData = req.query.data;
+        console.log("encodedData"+encodedData)
+
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
+                console.log("decoded "+decodedData)
+
         const TotalAmt = decodedData["total_amount"].replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
         const message = `transaction_code=${decodedData.transaction_code},status=${decodedData.status},total_amount=${TotalAmt},
         transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
