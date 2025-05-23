@@ -37,15 +37,15 @@ module.exports.payWithEsewa = async (req, res, next) => {
         // console.log(paymentData);
 
         // console.log(process.env.BASE_URL)
-        // const pay = await axios.post(process.env.BASE_URL, paymentData, {
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     }
-        // });
+        const pay = await axios.post(process.env.BASE_URL, paymentData, {
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
 
 
         // console.log(pay.request.res.responseUrl)
-        // res.redirect(pay.request.res.responseUrl)
+        res.redirect(pay.request.res.responseUrl)
         res.status(200).json({
             status: true,
             paymentData
