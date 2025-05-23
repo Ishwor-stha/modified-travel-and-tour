@@ -65,11 +65,11 @@ module.exports.paymentSucess = async (req, res, next) => {
         if (!req.query.data) return next(new errorHandler("Server error.", error.statusCode || 500))
         const encodedData = req.query.data;
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
-        const TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
+        const TotalAmt = decodedData["total_amount"].replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
         const message = `transaction_code=${decodedData.transaction_code},status=${decodedData.status},total_amount=${TotalAmt},
         transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
 
-        const hash = crypto.createHmac("sha256", SECRET_KEY).update(message).digest("base64");
+        const hash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(message).digest("base64");
 
         if (hash !== decodedData.signature) {
             return next(new errorHandler("Invalid signature.", error.statusCode || 500))
@@ -105,7 +105,7 @@ module.exports.paymentSucess = async (req, res, next) => {
             ref_id: response.data.ref_id,
             amount: response.data.total_amount,
             advancePayment: userData.advancePayment,
-            laterPayment: userData.laterPayment,
+            laterPayment: userData.payLater,
             bookingDate: new Date().toLocaleDateString()
         });
 
