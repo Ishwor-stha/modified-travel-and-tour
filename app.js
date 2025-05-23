@@ -63,7 +63,7 @@ app.use(session({
   } catch (err) {
     console.error('DB connection failed:', err);
     // Exit the process if DB connection fails
-    process.exit(1);
+    
   }
 })();
 
