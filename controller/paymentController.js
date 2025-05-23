@@ -11,6 +11,7 @@ const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
 module.exports.payWithEsewa = async (req, res, next) => {
     try {
         const bookingData = req.session.bookingData
+        console.log(bookingData)
         const amount = bookingData["advancePayment"];
         const tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0;
 
