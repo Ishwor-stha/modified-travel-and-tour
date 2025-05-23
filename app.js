@@ -47,7 +47,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: {
-        secure: true, // Must be true for cross-site (HTTPS)
+        secure: process.env.NODE_ENV === 'production', // Set to false for local HTTP testing
         sameSite: 'None', // Must be 'None' for cross-site
         maxAge: 1000 * 60 * 60,
         httpOnly: true,
