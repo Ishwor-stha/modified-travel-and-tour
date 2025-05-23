@@ -439,7 +439,7 @@ module.exports.bookTour = async (req, res, next) => {
         const possiblefield = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are missing" : "field is missing"}.`, 400));
-        if(req.body["contactNumber"]!==req.body["emergencyContact"])return next(new errorHandler("Phone no must be different.Please try again.", 400));
+        if(req.body["contactNumber"]===req.body["emergencyContact"])return next(new errorHandler("Phone no must be different.Please try again.", 400));
         if(isValidNepaliPhoneNumber(req.body["contactNumber"]))return next(new errorHandler("Phone no is not valid.Please try again.", 400));
         if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         let data = {};
