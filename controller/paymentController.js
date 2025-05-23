@@ -7,7 +7,7 @@ const axios = require("axios");
 const crypto = require("crypto");
 const { bookingMessageUser } = require("../utils/bookingMessageUser");
 const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
-const path=require("path")
+const path = require("path");
 
 module.exports.payWithEsewa = async (req, res, next) => {
     try {
@@ -227,7 +227,7 @@ module.exports.paymentSucess = async (req, res, next) => {
 module.exports.paymentFailure = async (req, res, next) => {
     try {
         return res.sendFile(path.join(__dirname, 'public', 'failure.html'));
-;
+
 
 
     } catch (error) {

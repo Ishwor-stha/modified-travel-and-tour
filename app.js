@@ -1,7 +1,7 @@
 const dotenv = require('dotenv');
 const cookieParser = require("cookie-parser");
 const express = require("express");
-// const path=require("path");
+const path=require("path");
 const {databaseConnect}=require("./utils/databaseConnect");
 const tourRoute = require("./route/tourRoute");
 const adminRoute = require("./route/adminRoute");
