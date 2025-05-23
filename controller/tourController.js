@@ -14,7 +14,6 @@ const { successMessage } = require("../utils/sucessMessage");
 const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
-const axios = require("axios");
 
 //@method :GET 
 //@Endpoint: localhost:6000/get-tours
@@ -94,8 +93,8 @@ module.exports.getOneTourDescriptionId = async (req, res, next) => {
     try {
         const { tourId } = req.params;
         if (!tourId) return next(new errorHandler("No id given of tour.Please try again.", 400));
-        const tourDescription = await Description.findOne({"tourId":tourId});
-        if (!tourDescription|| Object.keys(tourDescription).length === 0) return next(new errorHandler("No tour description found.Please try again.", 404));
+        const tourDescription = await Description.findOne({ "tourId": tourId });
+        if (!tourDescription || Object.keys(tourDescription).length === 0) return next(new errorHandler("No tour description found.Please try again.", 404));
         res.status(200).json({
             status: true,
             tourDescription
@@ -199,13 +198,13 @@ module.exports.postTour = async (req, res, next) => {
     }
 };
 
-module.exports.createDescriptionOfTour = async(req, res, next) => {
+module.exports.createDescriptionOfTour = async (req, res, next) => {
     try {
-        const {tourId}=req.params;
-        if(!tourId)return next(new errorHandler("Tour id is not given.Please provide tour id.",400));
-        if(!req.body)return next(new errorHandler("No body is given.",400));
-        req.body["tourId"]=tourId;
-        const possiblefield = ["tourId","shortDescription","detailedDescription","highlights"];
+        const { tourId } = req.params;
+        if (!tourId) return next(new errorHandler("Tour id is not given.Please provide tour id.", 400));
+        if (!req.body) return next(new errorHandler("No body is given.", 400));
+        req.body["tourId"] = tourId;
+        const possiblefield = ["tourId", "shortDescription", "detailedDescription", "highlights"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
         let data = {}
@@ -311,9 +310,9 @@ module.exports.updateTour = async (req, res, next) => {
 module.exports.updateTourDescription = async (req, res, next) => {
     try {
         // id from url
-        let {tourId} = req.params.id;
+        let { tourId } = req.params.id;
         if (!tourId) return next(new errorHandler("No tour id is given.Please try again.", 400));
-        const possiblefield = ["tourId","shortDescription","detailedDescription","highlights"];
+        const possiblefield = ["tourId", "shortDescription", "detailedDescription", "highlights"];
         let updatedData = {};
 
 
@@ -322,20 +321,20 @@ module.exports.updateTourDescription = async (req, res, next) => {
                 updatedData[key] = req.body[key];
             }
         }
-       
+
         // querying to database
-        const updateTour = await Description.findOneAndUpdate({"tourId":tourId}, updatedData);
+        const updateTour = await Description.findOneAndUpdate({ "tourId": tourId }, updatedData);
         // console.log(updateTour)
         if (!updateTour || Object.keys(updateTour).length === 0) {
-         
+
             return next(new errorHandler("Cannot update Details of tour . Please try again later.", 500));
         }
 
-    
+
         // sending response
         res.status(200).json({
             status: true,
-            message:"Details Updated sucessfully"
+            message: "Details Updated sucessfully"
         });
     } catch (error) {
         next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
@@ -353,7 +352,7 @@ module.exports.deleteTour = async (req, res, next) => {
         if (!id) return next(new errorHandler("Tour id is missing.Please try again. ", 400));
         // querying the database
         const del = await Tour.findByIdAndDelete(id);
-        const deleteDescrtiption=await Description.findOneAndDelete({"tourId":id});
+        const deleteDescrtiption = await Description.findOneAndDelete({ "tourId": id });
         if (!del || Object.keys(del).length <= 0) return next(new errorHandler("No Tour found.Please try again.", 404));
         if (!deleteDescrtiption || Object.keys(deleteDescrtiption).length <= 0) return next(new errorHandler("Cannot delete description of tour.", 404));
         // sending response
@@ -385,17 +384,13 @@ module.exports.enquiry = async (req, res, next) => {
         if (!tourId) return next(new errorHandler("The tour id is missing.", 400));
         let response
         let tour
-        try {
-            response = await axios.get(`${process.env.URL}/api/get-tour/${tourId}`)
-            tour = response.data["tour"]
-            delete tour._id;
-            delete tour.__v;
-            delete tour.slug
-        } catch (error) {
 
-            return next(new errorHandler(error.response["data"].message, error.status || 500));
-        }
-
+        response = await Tour.findById(tourId);
+        if(!response)return next(new errorHandler("No tour is found from given id.", 404));
+        tour = response
+        delete tour._id;
+        delete tour.__v;
+        delete tour.slug
 
         const possiblefield = ["fullName", "startDate", "email", "country", "contact", "question"]
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "")
@@ -430,13 +425,7 @@ module.exports.bookTour = async (req, res, next) => {
         const { tourName } = req.query;
         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
         if (!req.body) return next(new errorHandler("Please provide body field to proceed further.", 400));
-        let response
-        try {
-            response = await axios.get(`${process.env.URL}/api/get-tour-by-slug/${tourName}`)
-        } catch (error) {
-            return next(new errorHandler(error["response"].data["message"] || "Something went wrong", error.status || 500));
-
-        }
+        let response = await Tour.findOne({ "slug": tourName })
         const possiblefield = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are missing" : "field is missing"}.`, 400));
@@ -454,11 +443,11 @@ module.exports.bookTour = async (req, res, next) => {
             }
         }
         req.session.bookingData = data
-        req.session.tourData = response["data"];
+        req.session.tourData = response;
         res.status(200).json({
             message: "Your booking details.",
             status: true,
-            tourDetails: response["data"],
+            tourDetails: response,
             data,
             paymentUrl: process.env.BASE_URL
         });
