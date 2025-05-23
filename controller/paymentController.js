@@ -67,7 +67,7 @@ module.exports.paymentSucess = async (req, res, next) => {
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
         const TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
         const message = `transaction_code=${decodedData.transaction_code},status=${decodedData.status},total_amount=${TotalAmt},
-        transaction_uuid=${decodedData.transaction_uuid},product_code=${PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
+        transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE},signed_field_names=${decodedData.signed_field_names}`;
 
         const hash = crypto.createHmac("sha256", SECRET_KEY).update(message).digest("base64");
 
