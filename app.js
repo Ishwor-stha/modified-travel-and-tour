@@ -1,27 +1,27 @@
 const dotenv = require('dotenv');
 const cookieParser = require("cookie-parser");
 const express = require("express");
-const path=require("path");
-const {databaseConnect}=require("./utils/databaseConnect");
+const path = require("path");
+const { databaseConnect } = require("./utils/databaseConnect");
 const tourRoute = require("./route/tourRoute");
 const adminRoute = require("./route/adminRoute");
 const errorController = require('./controller/errorController');
-const bookigAndEnquiryRoute=require("./route/enquiryAndBookRoute")
-const {sanitize}=require("./utils/filter")
+const bookigAndEnquiryRoute = require("./route/enquiryAndBookRoute")
+const { sanitize } = require("./utils/filter")
 const app = express();
-const session=require("express-session");
+const session = require("express-session");
 // security packages
-const {limiter} = require("./utils/rateLimit");
+const { limiter } = require("./utils/rateLimit");
 const helmet = require('helmet');
 const cors = require('cors');
-const {preventHPP}=require("./utils/preventHpp");
+const { preventHPP } = require("./utils/preventHpp");
 const errorHandling = require('./utils/errorHandling');
 
 app.use(express.static(path.join(__dirname, 'public')));
 
 const corsOptions = {
-    origin:[process.env.URL1,process.env.URL2,process.env.URL3],
-    methods: ["GET", "POST","PATCH","DELETE"],
+    origin: [process.env.URL1, process.env.URL2, process.env.URL3],
+    methods: ["GET", "POST", "PATCH", "DELETE"],
     credentials: true
 }
 // loading environment variables from .env file
@@ -29,7 +29,7 @@ dotenv.config();
 app.set('trust proxy', 1);
 
 // Middleware to parse incoming JSON requests
-app.use(express.json({limit: '10kb'}))//limiting the json body size to 10 kb
+app.use(express.json({ limit: '10kb' }))//limiting the json body size to 10 kb
 app.use(express.urlencoded({ extended: true }));
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -41,8 +41,8 @@ app.use(preventHPP);
 app.use(cors(corsOptions));
 //////////////////////////
 app.use(cookieParser());
-app.use((req,res,next)=>{
-    sanitize(req,res,next);
+app.use((req, res, next) => {
+    sanitize(req, res, next);
 })
 app.use(session({
     secret: process.env.SessionSecret,
@@ -57,14 +57,18 @@ app.use(session({
 }));
 
 // Function to connect to the database
-databaseConnect().catch(err=>{
-    app.use((req,res,next)=>next(new errorHandling(err.message,err.statusCode ||500)));
-});
+const conn = async () => {
+    await databaseConnect().catch(err => {
+        app.use((req, res, next) => next(new errorHandling(err.message, err.statusCode || 500)));
+    });
+
+}
+conn()
 
 // Mount the tour route
 app.use("/api/", tourRoute);
 app.use("/api/admin/", adminRoute);
-app.use("/api/tour/",bookigAndEnquiryRoute);
+app.use("/api/tour/", bookigAndEnquiryRoute);
 
 
 
@@ -83,4 +87,4 @@ app.all('/{*any}', (req, res, next) => {
 // Global error handling middleware
 app.use(errorController);
 
-module.exports=app;
+module.exports = app;
