@@ -18,7 +18,7 @@ const {preventHPP}=require("./utils/preventHpp");
 const errorHandling = require('./utils/errorHandling');
 
 const corsOptions = {
-    origin:[process.env.URL1,process.env.URL2],
+    origin:[process.env.URL1,process.env.URL2,process.env.URL3],
     methods: ["GET", "POST","PATCH","DELETE"],
     credentials: true
 }
