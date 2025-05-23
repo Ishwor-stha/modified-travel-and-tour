@@ -86,7 +86,7 @@ module.exports.bookingMessageAdmin = ({
           </tr>
           <tr>
             <td class="label">Tour Package:</td>
-            <td>${tourData.title}</td>
+            <td>${tourData.tourName}</td>
           </tr>
           <tr>
             <td class="label">Booking Date:</td>

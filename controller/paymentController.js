@@ -204,10 +204,7 @@ module.exports.paymentSucess = async (req, res, next) => {
         // message sent to user
        await sendMessage(res,userData.email,"Payment Details",htmlMessageUser);
        await sendMessage(res,process.env.NODEMAILER_USER,"Payment Details",htmlMessageAdmin);
-       res.status(200).json({
-        status:true,
-        message:"Payment sucessfull"
-       })
+        return res.sendFile(path.join(__dirname, 'public', 'sucess.html'));
 
         // return res.status(200).json({
         //     status: true,
@@ -228,10 +225,8 @@ module.exports.paymentSucess = async (req, res, next) => {
 
 module.exports.paymentFailure = async (req, res, next) => {
     try {
-        res.status(500).json({
-            status: false,
-            message: 'Transaction failed.Please try again later.',
-        });
+        return res.sendFile(path.join(__dirname, 'public', 'failure.html'));
+;
 
 
     } catch (error) {

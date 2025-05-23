@@ -17,6 +17,8 @@ const cors = require('cors');
 const {preventHPP}=require("./utils/preventHpp");
 const errorHandling = require('./utils/errorHandling');
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 const corsOptions = {
     origin:[process.env.URL1,process.env.URL2,process.env.URL3],
     methods: ["GET", "POST","PATCH","DELETE"],
