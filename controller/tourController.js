@@ -14,6 +14,7 @@ const { successMessage } = require("../utils/sucessMessage");
 const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
+const {databaseConnect}=require("../utils/databaseConnect")
 
 //@method :GET 
 //@Endpoint: localhost:6000/get-tours
@@ -425,7 +426,16 @@ module.exports.bookTour = async (req, res, next) => {
         const { tourName } = req.query;
         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
         if (!req.body) return next(new errorHandler("Please provide body field to proceed further.", 400));
-        let response = await Tour.findOne({ "slug": tourName })
+       let response
+        try {
+            await databaseConnect()
+            response = await Tour.findOne({ slug: tourName });
+            if(!response || Object.keys(response).length===0)return next(new errorHandler("No tour found.",404));
+        
+        } catch (error) {
+            console.error('DB Error:', error);
+            return next(new errorHandler("Database connection error.",500));
+        }
         const possiblefield = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are missing" : "field is missing"}.`, 400));
