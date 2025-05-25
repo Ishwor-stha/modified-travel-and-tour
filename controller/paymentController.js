@@ -7,7 +7,7 @@ const axios = require("axios");
 const crypto = require("crypto");
 const { bookingMessageUser } = require("../utils/bookingMessageUser");
 const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
-const path = require("path");
+// const path = require("path");
 
 
 module.exports.payWithEsewa = async (req, res, next) => {
@@ -31,8 +31,8 @@ module.exports.payWithEsewa = async (req, res, next) => {
             product_delivery_charge: parseFloat(product_delivery_charge),
             transaction_uuid,
             product_code: process.env.PRODUCT_CODE,
-            // success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/payment-success`,
-            success_url: process.env.SUCCESS_URL,
+            success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/payment-success`,
+            
 
             failure_url: process.env.FAILURE_URL,
             signed_field_names: 'total_amount,transaction_uuid,product_code',
@@ -41,19 +41,19 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 
 
-        // const pay = await axios.post(process.env.BASE_URL, new URLSearchParams(paymentData).toString(), {
-        //     headers: {
-        //         'Content-Type': 'application/x-www-form-urlencoded',
-        //     }
-        // });
+        const pay = await axios.post(process.env.BASE_URL, new URLSearchParams(paymentData).toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        });
 
 
         // console.log(pay.request.res.responseUrl)
-        // res.redirect(pay.request.res.responseUrl)
-        res.status(200).json({
-            status: true,
-            paymentData
-        })
+        res.redirect(pay.request.res.responseUrl)
+        // res.status(200).json({
+        //     status: true,
+        //     paymentData
+        // })
 
 
 
@@ -63,104 +63,30 @@ module.exports.payWithEsewa = async (req, res, next) => {
 }
 
 
-// module.exports.paymentSucess = async (req, res, next) => {
-//     try {
-
-//         if (!req.query.data) return next(new errorHandler("Server error", 400))
-//         let transactionId = req.params.transactionId
-//         if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
-//         transactionId = Number(transactionId)
-//         const encodedData = req.query.data;
-//         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
-
-//         let TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
-//         TotalAmt = Number(TotalAmt); // Convert to a number
-
-//         TotalAmt = Number.isInteger(TotalAmt) ? TotalAmt.toFixed(0) : TotalAmt;
-//         const userSignature = `total_amount=${TotalAmt},transaction_uuid=${transactionId},product_code=${process.env.PRODUCT_CODE}`;
-//         const esewaSignature = `total_amount=${TotalAmt},transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
-
-//         const userHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(userSignature).digest("base64");
-//         const esewaHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(esewaSignature).digest("base64");
-
-//         if (userHash !== esewaHash) {
-//             return next(new errorHandler("Hash doesnot match.", 400))
-//         }
-
-
-//         const response = await axios.get(process.env.STATUS_CHECK, {
-//             headers: {
-//                 Accept: "application/json",
-//                 "Content-Type": "application/json"
-//             },
-//             params: {
-//                 product_code: process.env.PRODUCT_CODE,
-//                 total_amount: TotalAmt,
-//                 transaction_uuid: decodedData.transaction_uuid
-//             }
-//         });
-
-
-//         const userData = req.session.bookingData
-//         const tourData = req.session.tourData
-//         if (!userData || !tourData) {
-//             req.session.destroy();
-//             res.clearCookie('connect.sid');
-
-//             return next(new errorHandler("User data or booking data is missing.", 400));
-//         }
-//         //after verification store something to the database ie(payemnt details etc) in my example i wil simply send success html file 
-
-//         // console.log(response.data)
-//         const htmlMessageUser = bookingMessageUser({
-//             userData,
-//             tourData,
-//             transaction_uuid: response.data.transaction_uuid,
-//             ref_id: response.data.ref_id,
-//             amount: response.data.total_amount,
-//             advancePayment: userData.advancePayment,
-//             laterPayment: userData.payLater,
-//             bookingDate: new Date().toLocaleDateString()
-//         });
-
-//         const htmlMessageAdmin = bookingMessageAdmin({
-//             userData,
-//             tourData,
-//             transaction_uuid: response.data.transaction_uuid,
-//             ref_id: response.data.ref_id,
-//             amount: response.data.total_amount,
-//             advancePayment: userData.advancePayment,
-//             laterPayment: userData.payLater,
-//             bookingDate: new Date().toLocaleDateString()
-//         });
-//         // message sent to user
-//         await sendMessage(res, userData.email, "Payment Details", htmlMessageUser);
-//         await sendMessage(res, process.env.NODEMAILER_USER, "Payment Details", htmlMessageAdmin);
-//         req.session.destroy();
-//         const filePath = path.join(__dirname, '../public/success.html');
-//         res.sendFile(filePath)
-//         //    return res.status(200).json({
-//         //         status:true,
-//         //         message:"Payment completed"
-//         //    })
-
-//     } catch (error) {
-//         req.session.destroy();
-//         res.clearCookie('connect.sid');
-//         return next(new errorHandler(error.message, error.statusCode || 500))
-//     }
-// }
-
-
 module.exports.paymentSucess = async (req, res, next) => {
     try {
 
         if (!req.query.data) return next(new errorHandler("Server error", 400))
-  
+        let transactionId = req.params.transactionId
+        if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
+        transactionId = Number(transactionId)
         const encodedData = req.query.data;
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
 
-      
+        let TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
+        TotalAmt = Number(TotalAmt); // Convert to a number
+
+        TotalAmt = Number.isInteger(TotalAmt) ? TotalAmt.toFixed(0) : TotalAmt;
+        const userSignature = `total_amount=${TotalAmt},transaction_uuid=${transactionId},product_code=${process.env.PRODUCT_CODE}`;
+        const esewaSignature = `total_amount=${TotalAmt},transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
+
+        const userHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(userSignature).digest("base64");
+        const esewaHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(esewaSignature).digest("base64");
+
+        if (userHash !== esewaHash) {
+            return next(new errorHandler("Hash doesnot match.", 400))
+        }
+
 
         const response = await axios.get(process.env.STATUS_CHECK, {
             headers: {
@@ -169,7 +95,7 @@ module.exports.paymentSucess = async (req, res, next) => {
             },
             params: {
                 product_code: process.env.PRODUCT_CODE,
-                total_amount: decodedData.total_amount,
+                total_amount: TotalAmt,
                 transaction_uuid: decodedData.transaction_uuid
             }
         });
@@ -211,12 +137,12 @@ module.exports.paymentSucess = async (req, res, next) => {
         await sendMessage(res, userData.email, "Payment Details", htmlMessageUser);
         await sendMessage(res, process.env.NODEMAILER_USER, "Payment Details", htmlMessageAdmin);
         req.session.destroy();
-        const filePath = path.join(__dirname, '../public/success.html');
-        res.sendFile(filePath)
-        //    return res.status(200).json({
-        //         status:true,
-        //         message:"Payment completed"
-        //    })
+        // const filePath = path.join(__dirname, '../public/success.html');
+        // res.sendFile(filePath)
+           return res.status(200).json({
+                status:true,
+                message:"Payment completed"
+           })
 
     } catch (error) {
         req.session.destroy();
@@ -225,14 +151,17 @@ module.exports.paymentSucess = async (req, res, next) => {
     }
 }
 
+
+
+
 module.exports.paymentFailure = async (req, res, next) => {
     try {
-        const filePath = path.join(__dirname, '../public/failure.html');
-        res.sendFile(filePath)
-        //     return res.status(200).json({
-        //         status:true,
-        //         message:"Payment completed"
-        //    })
+        // const filePath = path.join(__dirname, '../public/failure.html');
+        // res.sendFile(filePath)
+            return res.status(200).json({
+                status:true,
+                message:"Payment completed"
+           })
 
 
 
