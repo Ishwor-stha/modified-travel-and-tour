@@ -7,6 +7,7 @@ const axios = require("axios");
 const crypto = require("crypto");
 const { bookingMessageUser } = require("../utils/bookingMessageUser");
 const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
+const path = require("path");
 
 
 module.exports.payWithEsewa = async (req, res, next) => {
@@ -36,8 +37,8 @@ module.exports.payWithEsewa = async (req, res, next) => {
             signature: signature,
         };
 
-      
-      
+
+
         const pay = await axios.post(process.env.BASE_URL, new URLSearchParams(paymentData).toString(), {
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
@@ -62,11 +63,11 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 module.exports.paymentSucess = async (req, res, next) => {
     try {
-        
-        if (!req.query.data)return next(new errorHandler("Server error",400)) 
+
+        if (!req.query.data) return next(new errorHandler("Server error", 400))
         let transactionId = req.params.transactionId
-        if(!transactionId)return next(new errorHandler("Cannot get transaction id",400))
-         transactionId=Number(transactionId)
+        if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
+        transactionId = Number(transactionId)
         const encodedData = req.query.data;
         const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
 
@@ -81,7 +82,7 @@ module.exports.paymentSucess = async (req, res, next) => {
         const esewaHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(esewaSignature).digest("base64");
 
         if (userHash !== esewaHash) {
-           return next(new errorHandler("Hash doesnot match.",400))
+            return next(new errorHandler("Hash doesnot match.", 400))
         }
 
 
@@ -97,20 +98,20 @@ module.exports.paymentSucess = async (req, res, next) => {
             }
         });
 
-       
-        const userData= req.session.bookingData
-        const tourData= req.session.tourData
-        if(!userData || !tourData){
-           req.session.destroy();
-           res.clearCookie('connect.sid');
 
-            return next(new errorHandler("User data or booking data is missing.",400));
+        const userData = req.session.bookingData
+        const tourData = req.session.tourData
+        if (!userData || !tourData) {
+            req.session.destroy();
+            res.clearCookie('connect.sid');
+
+            return next(new errorHandler("User data or booking data is missing.", 400));
         }
         //after verification store something to the database ie(payemnt details etc) in my example i wil simply send success html file 
 
         // console.log(response.data)
         const htmlMessageUser = bookingMessageUser({
-            userData ,
+            userData,
             tourData,
             transaction_uuid: response.data.transaction_uuid,
             ref_id: response.data.ref_id,
@@ -131,29 +132,32 @@ module.exports.paymentSucess = async (req, res, next) => {
             bookingDate: new Date().toLocaleDateString()
         });
         // message sent to user
-       await sendMessage(res,userData.email,"Payment Details",htmlMessageUser);
-       await sendMessage(res,process.env.NODEMAILER_USER,"Payment Details",htmlMessageAdmin);
-       req.session.destroy();
-
-       return res.status(200).json({
-            status:true,
-            message:"Payment completed"
-       })
+        await sendMessage(res, userData.email, "Payment Details", htmlMessageUser);
+        await sendMessage(res, process.env.NODEMAILER_USER, "Payment Details", htmlMessageAdmin);
+        req.session.destroy();
+        const filePath = path.join(__dirname, '../public/success.html');
+        res.sendFile(filePath)
+        //    return res.status(200).json({
+        //         status:true,
+        //         message:"Payment completed"
+        //    })
 
     } catch (error) {
-       req.session.destroy();
-       res.clearCookie('connect.sid');
-       return next(new errorHandler(error.message, error.statusCode || 500))
+        req.session.destroy();
+        res.clearCookie('connect.sid');
+        return next(new errorHandler(error.message, error.statusCode || 500))
     }
 }
 
 
 module.exports.paymentFailure = async (req, res, next) => {
     try {
-        return res.status(200).json({
-            status:true,
-            message:"Payment completed"
-       })
+        const filePath = path.join(__dirname, '../public/failure.html');
+        res.sendFile(filePath)
+        //     return res.status(200).json({
+        //         status:true,
+        //         message:"Payment completed"
+        //    })
 
 
 
