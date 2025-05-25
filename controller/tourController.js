@@ -50,7 +50,7 @@ module.exports.getTours = async (req, res, next) => {
 
 
         // Fetching the data from the database using $or condition for flexible matching
-        let tourQuery =await Tour.find({}, "-popularity");
+        let tourQuery =Tour.find({}, "-popularity");
         // console.log(condition)
 
         if (condition.length > 0) {
@@ -72,7 +72,7 @@ module.exports.getTours = async (req, res, next) => {
         page = (page > 0) ? Math.ceil(page) : 1;
         const limit = 10;
         const skip = (page - 1) * limit; // Skip results based on current page
-        const tour = tourQuery.skip(skip).limit(limit);
+        const tour = await tourQuery.skip(skip).limit(limit);
         // if there is is tour 
         if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found in the database.", 404));
 
