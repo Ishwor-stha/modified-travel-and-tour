@@ -20,76 +20,60 @@ const {databaseConnect}=require("../utils/databaseConnect")
 //@Endpoint: localhost:6000/get-tours
 //@desc:Getting the array of tours in object
 module.exports.getTours = async (req, res, next) => {
-    try {
-        // variable for sorting
-        let sort;
+  try {
+    let sort;
+    let condition = [];
+    const fields = ["country", "activity", "grade"];
+    let { page = 1 } = req.query;
 
-        // let query={}
-        let condition = [];
-        let fields = ["country", "activity", "grade"];
-
-        // destructuring query parameters
-        let { page = 1 } = req.query;
-
-        // Handling the sorting logic
-        if (req.query.originalPrice || req.query.popularity) {
-            const { originalPrice, popularity } = req.query;
-            if (originalPrice) sort = originalPrice === "asc" ? 1 : -1;
-            if (popularity) sort = popularity === "asc" ? 1 : -1;
-
-        }
-
-        // iterate through query
-        for (let keys in req.query) {
-            if (fields.includes(keys)) {
-                condition.push({ [keys]: new RegExp(req.query[keys], "i") });
-            }
-        }
-
-
-
-
-        // Fetching the data from the database using $or condition for flexible matching
-        let tourQuery = Tour.find({}, "-popularity");
-        // console.log(condition)
-
-        if (condition.length > 0) {
-            // Use $or if any of the conditions are provided
-            tourQuery = tourQuery.where({ $or: condition });
-        }
-
-        // If sorting by price 
-        if (req.query.originalPrice || req.query.popularity) {
-            if (req.query.popularity) tourQuery = tourQuery.sort({ popularity: sort });
-            if (req.query.originalPrice) tourQuery = tourQuery.sort({ originalPrice: sort });
-
-        }
-
-        //pagination logic
-        //string to integer
-        page = parseInt(page);
-        // page is <0 then set to 1 otherwise set page to roundup value of page
-        page = (page > 0) ? Math.ceil(page) : 1;
-        const limit = 10;
-        const skip = (page - 1) * limit; // Skip results based on current page
-        const tour = tourQuery.skip(skip).limit(limit);
-        const tours = await tourQuery;
-
-        // if there is is tour 
-        if (!tours || Object.keys(tours).length === 0) return next(new errorHandler("No tour found in the database.", 404));
-
-        res.status(200).json({
-            pageNo: page,
-            status: true,
-            tourList: tours
-        });
-
-    } catch (error) {
-        // passing erorr to the error handling middleware
-        next(new errorHandler(error.message, error.statusCode || 500));
-
+    // Sorting logic
+    if (req.query.originalPrice || req.query.popularity) {
+      const { originalPrice, popularity } = req.query;
+      if (originalPrice) sort = { originalPrice: originalPrice === "asc" ? 1 : -1 };
+      if (popularity) sort = { popularity: popularity === "asc" ? 1 : -1 };
     }
+
+    // Filter logic
+    for (let key in req.query) {
+      if (fields.includes(key)) {
+        condition.push({ [key]: new RegExp(req.query[key], "i") });
+      }
+    }
+
+    // Build base query
+    let query = condition.length > 0 ? { $or: condition } : {};
+
+    // Pagination
+    page = parseInt(page);
+    page = page > 0 ? page : 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+
+    // Count total results (for pagination info)
+    const totalTours = await Tour.countDocuments(query);
+
+    // Build and execute query
+    let tours = Tour.find(query, "-popularity").skip(skip).limit(limit);
+    if (sort) tours = tours.sort(sort);
+    const tourList = await tours;
+
+    // If no results
+    if (!tourList || tourList.length === 0) {
+      return next(new errorHandler("No tour found in the database.", 404));
+    }
+
+    // Respond
+    res.status(200).json({
+      pageNo: page,
+      totalTours,
+      status: true,
+      tourList,
+    });
+  } catch (error) {
+    next(new errorHandler(error.message || "Something went wrong", error.statusCode || 500));
+  }
 };
+
 
 module.exports.getOneTourDescriptionId = async (req, res, next) => {
     try {
