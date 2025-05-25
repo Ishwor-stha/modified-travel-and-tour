@@ -60,6 +60,17 @@ module.exports.bookingMessageUser = ({ userData,  tourData,  transaction_uuid,  
         <p>We have successfully received your advance payment via eSewa. Below are your transaction and booking details:</p>
 
         <table class="details-table">
+          <td class="label">Email:</td>
+            <td>${userData.email}</td>
+          </tr>
+          <tr>
+            <td class="label">Contact Number:</td>
+            <td>${userData.contactNumber}</td>
+          </tr>
+          <tr>
+            <td class="label">Emergency Contact:</td>
+            <td>${userData.emergencyContact}</td>
+          </tr>
           <tr>
             <td class="label">Status:</td>
             <td>COMPLETE</td>
@@ -93,9 +104,7 @@ module.exports.bookingMessageUser = ({ userData,  tourData,  transaction_uuid,  
             <td>${bookingDate}</td>
           </tr>
           <tr>
-            <td class="label">Email:</td>
-            <td>${userData.email}</td>
-          </tr>
+          
         </table>
 
         <p>If you have any questions, feel free to reply to this email.</p>

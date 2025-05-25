@@ -1,12 +1,12 @@
-module.exports.bookingMessageAdmin = ({ 
-  userData, 
-  tourData, 
-  transaction_uuid, 
-  ref_id, 
-  amount, 
-  advancePayment, 
-  laterPayment, 
-  bookingDate 
+module.exports.bookingMessageAdmin = ({
+  userData,
+  tourData,
+  transaction_uuid,
+  ref_id,
+  amount,
+  advancePayment,
+  laterPayment,
+  bookingDate
 }) => {
   const year = new Date().getFullYear();
 
@@ -116,8 +116,8 @@ module.exports.bookingMessageAdmin = ({
 
         <p>Please proceed with the necessary arrangements for this booking.</p>
 
-        <div class="footer">
-          &copy; ${year} Astrapi Travels and Tour
+     <div class="footer">
+          &copy; ${year} Astrapi Travel And Tour. All rights reserved.
         </div>
       </div>
     </body>

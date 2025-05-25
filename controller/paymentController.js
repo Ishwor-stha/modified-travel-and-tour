@@ -12,7 +12,7 @@ const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
 module.exports.payWithEsewa = async (req, res, next) => {
     try {
         const bookingData = req.session.bookingData
-        console.log(bookingData)
+        // console.log(bookingData)
         const amount = bookingData["advancePayment"];
         const tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0;
 
@@ -36,22 +36,21 @@ module.exports.payWithEsewa = async (req, res, next) => {
             signature: signature,
         };
 
-        // console.log(paymentData);
+      
+      
+        const pay = await axios.post(process.env.BASE_URL, new URLSearchParams(paymentData).toString(), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        });
 
-        // console.log(process.env.BASE_URL)
-        // const pay = await axios.post(process.env.BASE_URL, paymentData, {
-        //     headers: {
-        //         'Content-Type': 'application/json',
-        //     }
-        // });
 
-
-        // // console.log(pay.request.res.responseUrl)
+        console.log(pay.request.res.responseUrl)
         // res.redirect(pay.request.res.responseUrl)
-        res.status(200).json({
-            status: true,
-            paymentData
-        })
+        // res.status(200).json({
+        //     status: true,
+        //     paymentData
+        // })
 
 
 
@@ -75,11 +74,11 @@ module.exports.paymentSucess = async (req, res, next) => {
         TotalAmt = Number(TotalAmt); // Convert to a number
 
         TotalAmt = Number.isInteger(TotalAmt) ? TotalAmt.toFixed(0) : TotalAmt;
-        const userSignature = `total_amount=${TotalAmt},transaction_uuid=${transactionId},product_code=${PRODUCT_CODE}`;
-        const esewaSignature = `total_amount=${TotalAmt},transaction_uuid=${decodedData.transaction_uuid},product_code=${PRODUCT_CODE}`;
+        const userSignature = `total_amount=${TotalAmt},transaction_uuid=${transactionId},product_code=${process.env.PRODUCT_CODE}`;
+        const esewaSignature = `total_amount=${TotalAmt},transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
 
-        const userHash = crypto.createHmac("sha256", SECRET_KEY).update(userSignature).digest("base64");
-        const esewaHash = crypto.createHmac("sha256", SECRET_KEY).update(esewaSignature).digest("base64");
+        const userHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(userSignature).digest("base64");
+        const esewaHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(esewaSignature).digest("base64");
 
         if (userHash !== esewaHash) {
            return next(new errorHandler("Hash doesnot match.",400))
@@ -101,7 +100,12 @@ module.exports.paymentSucess = async (req, res, next) => {
        
         const userData= req.session.bookingData
         const tourData= req.session.tourData
-        if(!userData || !tourData)return next(new errorHandler("User data or booking data is missing.",400));
+        if(!userData || !tourData){
+           req.session.destroy();
+           res.clearCookie('connect.sid');
+
+            return next(new errorHandler("User data or booking data is missing.",400));
+        }
         //after verification store something to the database ie(payemnt details etc) in my example i wil simply send success html file 
 
         // console.log(response.data)
@@ -129,13 +133,17 @@ module.exports.paymentSucess = async (req, res, next) => {
         // message sent to user
        await sendMessage(res,userData.email,"Payment Details",htmlMessageUser);
        await sendMessage(res,process.env.NODEMAILER_USER,"Payment Details",htmlMessageAdmin);
+       req.session.destroy();
+
        return res.status(200).json({
             status:true,
             message:"Payment completed"
        })
 
     } catch (error) {
-        return next(new errorHandler(error.message, error.statusCode || 500))
+       req.session.destroy();
+       res.clearCookie('connect.sid');
+       return next(new errorHandler(error.message, error.statusCode || 500))
     }
 }
 
