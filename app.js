@@ -15,7 +15,7 @@ const { limiter } = require("./utils/rateLimit");
 const helmet = require('helmet');
 const cors = require('cors');
 const { preventHPP } = require("./utils/preventHpp");
-const errorHandling = require('./utils/errorHandling');
+// const errorHandling = require('./utils/errorHandling');
 
 
 
