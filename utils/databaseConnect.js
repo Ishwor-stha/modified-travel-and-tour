@@ -54,8 +54,6 @@ module.exports.databaseConnect = async () => {
 
   if (!cached.promise) {
     cached.promise = mongoose.connect(process.env.DATABASE, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       serverSelectionTimeoutMS: 10000,
     }).then((mongoose) => {
       return mongoose;
