@@ -14,70 +14,72 @@ const { successMessage } = require("../utils/sucessMessage");
 const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
-const {databaseConnect}=require("../utils/databaseConnect")
+const { databaseConnect } = require("../utils/databaseConnect")
 
 //@method :GET 
 //@Endpoint: localhost:6000/get-tours
 //@desc:Getting the array of tours in object
 module.exports.getTours = async (req, res, next) => {
-  try {
-    await databaseConnect()
-    let sort;
-    let condition = [];
-    const fields = ["country", "activity", "grade"];
-    let { page = 1 } = req.query;
+    try {
+        await databaseConnect()
+        let sort;
+        let condition = [];
+        const fields = ["country", "activity", "grade"];
+        let { page = 1 } = req.query;
 
-    // Sorting logic
-    if (req.query.originalPrice || req.query.popularity) {
-      const { originalPrice, popularity } = req.query;
-      if (originalPrice) sort = { originalPrice: originalPrice === "asc" ? 1 : -1 };
-      if (popularity) sort = { popularity: popularity === "asc" ? 1 : -1 };
+        // Sorting logic
+        if (req.query.originalPrice || req.query.popularity) {
+            const { originalPrice, popularity } = req.query;
+            if (originalPrice) sort = { originalPrice: originalPrice === "asc" ? 1 : -1 };
+            if (popularity) sort = { popularity: popularity === "asc" ? 1 : -1 };
+        }
+
+        // Filter logic
+        for (let key in req.query) {
+            if (fields.includes(key)) {
+                condition.push({ [key]: new RegExp(req.query[key], "i") });
+            }
+        }
+
+        // Build base query
+        let query = condition.length > 0 ? { $or: condition } : {};
+
+        // Pagination
+        page = parseInt(page);
+        page = page > 0 ? page : 1;
+        const limit = 10;
+        const skip = (page - 1) * limit;
+
+        // Count total results (for pagination info)
+        const totalTours = await Tour.countDocuments(query);
+
+        // Build and execute query
+        let tours = Tour.find(query, "-popularity").skip(skip).limit(limit);
+        if (sort) tours = tours.sort(sort);
+        const tourList = await tours;
+
+        // If no results
+        if (!tourList || tourList.length === 0) {
+            return next(new errorHandler("No tour found in the database.", 404));
+        }
+
+        // Respond
+        res.status(200).json({
+            pageNo: page,
+            totalTours,
+            status: true,
+            tourList,
+        });
+    } catch (error) {
+        next(new errorHandler(error.message || "Something went wrong", error.statusCode || 500));
     }
-
-    // Filter logic
-    for (let key in req.query) {
-      if (fields.includes(key)) {
-        condition.push({ [key]: new RegExp(req.query[key], "i") });
-      }
-    }
-
-    // Build base query
-    let query = condition.length > 0 ? { $or: condition } : {};
-
-    // Pagination
-    page = parseInt(page);
-    page = page > 0 ? page : 1;
-    const limit = 10;
-    const skip = (page - 1) * limit;
-
-    // Count total results (for pagination info)
-    const totalTours = await Tour.countDocuments(query);
-
-    // Build and execute query
-    let tours = Tour.find(query, "-popularity").skip(skip).limit(limit);
-    if (sort) tours = tours.sort(sort);
-    const tourList = await tours;
-
-    // If no results
-    if (!tourList || tourList.length === 0) {
-      return next(new errorHandler("No tour found in the database.", 404));
-    }
-
-    // Respond
-    res.status(200).json({
-      pageNo: page,
-      totalTours,
-      status: true,
-      tourList,
-    });
-  } catch (error) {
-    next(new errorHandler(error.message || "Something went wrong", error.statusCode || 500));
-  }
 };
 
 
 module.exports.getOneTourDescriptionId = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         const { tourId } = req.params;
         if (!tourId) return next(new errorHandler("No id given of tour.Please try again.", 400));
         const tourDescription = await Description.findOne({ "tourId": tourId });
@@ -95,6 +97,8 @@ module.exports.getOneTourDescriptionId = async (req, res, next) => {
 
 module.exports.getOneTourById = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         const { id } = req.params;
         if (!id) return next(new errorHandler("No id given of tour.Please try again.", 400));
         const tour = await Tour.findById(id, "-popularity");
@@ -114,6 +118,8 @@ module.exports.getOneTourById = async (req, res, next) => {
 //@desc:Getting the detail of  tour 
 module.exports.getOneTour = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         const { slug } = req.params;
         if (!slug) return next(new errorHandler("No slug given of tour.Please try again.", 400));
         const tour = await Tour.findOne({ slug: slug }, "-popularity");
@@ -133,6 +139,8 @@ module.exports.getOneTour = async (req, res, next) => {
 //@desc:Adding the tours
 module.exports.postTour = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         const possiblefield = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
             "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
@@ -187,6 +195,8 @@ module.exports.postTour = async (req, res, next) => {
 
 module.exports.createDescriptionOfTour = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         const { tourId } = req.params;
         if (!tourId) return next(new errorHandler("Tour id is not given.Please provide tour id.", 400));
         if (!req.body) return next(new errorHandler("No body is given.", 400));
@@ -217,6 +227,8 @@ module.exports.createDescriptionOfTour = async (req, res, next) => {
 // @endpoint:localhost:6000/tour-admin/update-tour/:id
 module.exports.updateTour = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         // id from url
         let id = req.params.id;
         if (!id) return next(new errorHandler("No tour id is given.Please try again.", 400));
@@ -296,6 +308,8 @@ module.exports.updateTour = async (req, res, next) => {
 };
 module.exports.updateTourDescription = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         // id from url
         let { tourId } = req.params.id;
         if (!tourId) return next(new errorHandler("No tour id is given.Please try again.", 400));
@@ -334,6 +348,8 @@ module.exports.updateTourDescription = async (req, res, next) => {
 // @endpoint:localhost:6000/tour-admin/delete-tour/:id
 module.exports.deleteTour = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         // id from url
         const id = req.params.id;
         if (!id) return next(new errorHandler("Tour id is missing.Please try again. ", 400));
@@ -365,6 +381,8 @@ module.exports.deleteTour = async (req, res, next) => {
 
 module.exports.enquiry = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         // destructring name,email,contact,message from req.body
         const tourId = req.query.tourId
         if (!req.body) return next(new errorHandler(`fullName,startDate,email,country,contact,question field are missing.`, 400));
@@ -373,7 +391,7 @@ module.exports.enquiry = async (req, res, next) => {
         let tour
 
         response = await Tour.findById(tourId);
-        if(!response)return next(new errorHandler("No tour is found from given id.", 404));
+        if (!response) return next(new errorHandler("No tour is found from given id.", 404));
         tour = response
         delete tour._id;
         delete tour.__v;
@@ -409,23 +427,25 @@ module.exports.enquiry = async (req, res, next) => {
 module.exports.bookTour = async (req, res, next) => {
     try {
 
+
+
         const { tourName } = req.query;
         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
         if (!req.body) return next(new errorHandler("Please provide body field to proceed further.", 400));
-       let response
+        let response
         try {
             await databaseConnect()
             response = await Tour.findOne({ slug: tourName });
-            if(!response || Object.keys(response).length===0)return next(new errorHandler("No tour found.",404));
-        
+            if (!response || Object.keys(response).length === 0) return next(new errorHandler("No tour found.", 404));
+
         } catch (error) {
             console.error('DB Error:', error);
-            return next(new errorHandler("Database connection error.",500));
+            return next(new errorHandler("Database connection error.", 500));
         }
         const possiblefield = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are missing" : "field is missing"}.`, 400));
-        if(req.body["contactNumber"]===req.body["emergencyContact"])return next(new errorHandler("Phone no must be different.Please try again.", 400));
+        if (req.body["contactNumber"] === req.body["emergencyContact"]) return next(new errorHandler("Phone no must be different.Please try again.", 400));
         // if(isValidNepaliPhoneNumber(req.body["contactNumber"]))return next(new errorHandler("Phone no is not valid.Please try again.", 400));
         if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
         let data = {};
