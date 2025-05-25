@@ -21,6 +21,7 @@ const {databaseConnect}=require("../utils/databaseConnect")
 //@desc:Getting the array of tours in object
 module.exports.getTours = async (req, res, next) => {
   try {
+    await databaseConnect()
     let sort;
     let condition = [];
     const fields = ["country", "activity", "grade"];
