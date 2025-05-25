@@ -50,7 +50,7 @@ module.exports.getTours = async (req, res, next) => {
 
 
         // Fetching the data from the database using $or condition for flexible matching
-        let tourQuery =await Tour.find({}, "-popularity");
+        let tourQuery = Tour.find({}, "-popularity");
         // console.log(condition)
 
         if (condition.length > 0) {
@@ -73,14 +73,16 @@ module.exports.getTours = async (req, res, next) => {
         const limit = 10;
         const skip = (page - 1) * limit; // Skip results based on current page
         const tour = tourQuery.skip(skip).limit(limit);
+        const tours = await tourQuery;
+
         // if there is is tour 
-        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found in the database.", 404));
+        if (!tours || Object.keys(tours).length === 0) return next(new errorHandler("No tour found in the database.", 404));
 
         res.status(200).json({
             pageNo: page,
             totalTours: tour.length,
             status: true,
-            tourList: tour
+            tourList: tours
         });
 
     } catch (error) {
