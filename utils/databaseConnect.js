@@ -12,26 +12,60 @@
 //     }
 // }
 
-const mongoose = require("mongoose");
-const errorHandling = require("./errorHandling");
+// const mongoose = require("mongoose");
+// const errorHandling = require("./errorHandling");
 
-let isConnected = false; 
+// let isConnected = false; 
+
+// module.exports.databaseConnect = async () => {
+//   if (isConnected) return;
+
+//   try {
+//     const conn = await mongoose.connect(process.env.DATABASE, {
+      
+//       serverSelectionTimeoutMS: 10000, 
+//     });
+
+//     isConnected = conn.connections[0].readyState === 1;
+//     if (isConnected) {
+//       console.log(" Database connected sucessfully.");
+//     } else {
+//       throw new Error("MongoDB connection not ready");
+//     }
+//   } catch (error) {
+//     console.error(`MongoDB connection error: ${error.message}`);
+//     throw new errorHandling(error.message || "MongoDB connection failed", 500);
+//   }
+// };
+
+const mongoose = require('mongoose');
+const errorHandling = require('./errorHandling');
+
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
 
 module.exports.databaseConnect = async () => {
-  if (isConnected) return;
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.DATABASE, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 10000,
+    }).then((mongoose) => {
+      return mongoose;
+    });
+  }
 
   try {
-    const conn = await mongoose.connect(process.env.DATABASE, {
-      
-      serverSelectionTimeoutMS: 10000, 
-    });
-
-    isConnected = conn.connections[0].readyState === 1;
-    if (isConnected) {
-      console.log(" Database connected sucessfully.");
-    } else {
-      throw new Error("MongoDB connection not ready");
-    }
+    cached.conn = await cached.promise;
+    console.log("Database connected successfully.");
+    return cached.conn;
   } catch (error) {
     console.error(`MongoDB connection error: ${error.message}`);
     throw new errorHandling(error.message || "MongoDB connection failed", 500);
