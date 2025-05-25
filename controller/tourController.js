@@ -80,7 +80,6 @@ module.exports.getTours = async (req, res, next) => {
 
         res.status(200).json({
             pageNo: page,
-            totalTours: tourQuery.length,
             status: true,
             tourList: tours
         });
