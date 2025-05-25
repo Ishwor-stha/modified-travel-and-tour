@@ -1,3 +1,35 @@
+const mongoose = require('mongoose');
+const errorHandling = require('./errorHandling');
+
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
+module.exports.databaseConnect = async () => {
+  if (cached.conn) {
+    return cached.conn;
+  }
+
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(process.env.DATABASE, {
+      serverSelectionTimeoutMS: 10000,
+    }).then((mongoose) => {
+      return mongoose;
+    });
+  }
+
+  try {
+    cached.conn = await cached.promise;
+    console.log("Database connected successfully.");
+    return cached.conn;
+  } catch (error) {
+    console.error(`MongoDB connection error: ${error.message}`);
+    throw new errorHandling(error.message || "MongoDB connection failed", 500);
+  }
+};
+
 // const errorHandling=require("./errorHandling");
 // const mongoose=require("mongoose");
 // module.exports.databaseConnect=async ()=> {
@@ -37,35 +69,3 @@
 //     throw new errorHandling(error.message || "MongoDB connection failed", 500);
 //   }
 // };
-
-const mongoose = require('mongoose');
-const errorHandling = require('./errorHandling');
-
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
-
-module.exports.databaseConnect = async () => {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.DATABASE, {
-      serverSelectionTimeoutMS: 10000,
-    }).then((mongoose) => {
-      return mongoose;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-    console.log("Database connected successfully.");
-    return cached.conn;
-  } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
-    throw new errorHandling(error.message || "MongoDB connection failed", 500);
-  }
-};
