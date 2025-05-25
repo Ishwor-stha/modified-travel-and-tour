@@ -22,7 +22,7 @@ module.exports.databaseConnect = async () => {
 
   try {
     const conn = await mongoose.connect(process.env.DATABASE, {
-      bufferCommands: false,
+      
       serverSelectionTimeoutMS: 10000, 
     });
 
