@@ -169,7 +169,7 @@ module.exports.paymentSucess = async (req, res, next) => {
             },
             params: {
                 product_code: process.env.PRODUCT_CODE,
-                total_amount: TotalAmt,
+                total_amount: decodedData.total_amount,
                 transaction_uuid: decodedData.transaction_uuid
             }
         });
