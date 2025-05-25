@@ -50,7 +50,7 @@ module.exports.getTours = async (req, res, next) => {
 
 
         // Fetching the data from the database using $or condition for flexible matching
-        let tourQuery = Tour.find({}, "-popularity");
+        let tourQuery =await Tour.find({}, "-popularity");
         // console.log(condition)
 
         if (condition.length > 0) {
