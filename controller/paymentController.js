@@ -32,8 +32,6 @@ module.exports.payWithEsewa = async (req, res, next) => {
             transaction_uuid,
             product_code: process.env.PRODUCT_CODE,
             success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/payment-success`,
-            
-
             failure_url: process.env.FAILURE_URL,
             signed_field_names: 'total_amount,transaction_uuid,product_code',
             signature: signature,
@@ -137,6 +135,8 @@ module.exports.paymentSucess = async (req, res, next) => {
         await sendMessage(res, userData.email, "Payment Details", htmlMessageUser);
         await sendMessage(res, process.env.NODEMAILER_USER, "Payment Details", htmlMessageAdmin);
         req.session.destroy();
+        res.clearCookie('connect.sid');
+
         // const filePath = path.join(__dirname, '../public/success.html');
         // res.sendFile(filePath)
            return res.status(200).json({
