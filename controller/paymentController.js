@@ -106,7 +106,6 @@ module.exports.paymentSucess = async (req, res, next) => {
 
             return next(new errorHandler("User data or booking data is missing.", 400));
         }
-        //after verification store something to the database ie(payemnt details etc) in my example i wil simply send success html file 
 
         // console.log(response.data)
         const htmlMessageUser = bookingMessageUser({
