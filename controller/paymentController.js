@@ -1,13 +1,12 @@
 // const { deleteImage } = require("../utils/deleteImage");
 const errorHandler = require("../utils/errorHandling");
 // const fs = require("fs");
-// const path = require("path");
 const { sendMessage } = require("../utils/nodemailer");
 const axios = require("axios");
 const crypto = require("crypto");
 const { bookingMessageUser } = require("../utils/bookingMessageUser");
 const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
-// const path = require("path");
+const path = require("path");
 
 
 module.exports.payWithEsewa = async (req, res, next) => {
@@ -137,12 +136,12 @@ module.exports.paymentSucess = async (req, res, next) => {
         req.session.destroy();
         res.clearCookie('connect.sid');
 
-        // const filePath = path.join(__dirname, '../public/success.html');
-        // res.sendFile(filePath)
-           return res.status(200).json({
-                status:true,
-                message:"Payment completed"
-           })
+
+        return res.sendFile(path.join(__dirname, 'public', 'sucess.html'));
+        //    return res.status(200).json({
+        //         status:true,
+        //         message:"Payment completed"
+        //    })
 
     } catch (error) {
         req.session.destroy();
@@ -156,12 +155,14 @@ module.exports.paymentSucess = async (req, res, next) => {
 
 module.exports.paymentFailure = async (req, res, next) => {
     try {
-        // const filePath = path.join(__dirname, '../public/failure.html');
-        // res.sendFile(filePath)
-            return res.status(200).json({
-                status:true,
-                message:"Payment completed"
-           })
+        req.session.destroy();
+        res.clearCookie('connect.sid');
+        return res.sendFile(path.join(__dirname, 'public', 'failure.html'));
+
+        //     return res.status(200).json({
+        //         status:true,
+        //         message:"Payment completed"
+        //    })
 
 
 

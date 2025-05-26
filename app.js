@@ -10,7 +10,7 @@ const bookigAndEnquiryRoute = require("./route/enquiryAndBookRoute")
 const { sanitize } = require("./utils/filter")
 const app = express();
 const session = require("express-session");
-// const path=require("path");
+const path=require("path");
 // security packages
 const { limiter } = require("./utils/rateLimit");
 const helmet = require('helmet');
@@ -32,7 +32,7 @@ app.set('trust proxy', 1);
 // Middleware to parse incoming JSON requests
 app.use(express.json({ limit: '10kb' }))//limiting the json body size to 10 kb
 app.use(express.urlencoded({ extended: true }));
-// app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public')));
 
 // app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
