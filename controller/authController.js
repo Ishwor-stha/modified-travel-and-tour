@@ -11,7 +11,7 @@ const { doValidations } = require("../utils/doValidations");
 // const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const User = require("../modles/userModel");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
-
+const {databaseConnect}=require("../utils/databaseConnect")
 
 
 // @method POST
@@ -22,6 +22,7 @@ const { capaitlize } = require("../utils/capitalizedFirstLetter");
 
 module.exports.createAdmin = async (req, res, next) => {
     try {
+       await  databaseConnect()
         if (!req.body || Object.keys(req.body).length === 0) return next(new errorHandling("Empty body field please fill the form.", 400));
         const requireFieds = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
         const check = requireFieds.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
@@ -56,6 +57,7 @@ module.exports.createAdmin = async (req, res, next) => {
 }
 module.exports.updateAdmin = async (req, res, next) => {
     try {
+        await databaseConnect()
         const userId = req.user.userId;//from checkJwt controller
         if (!userId) return next(new errorHandling("Something went wrong.", 400));
         if (!req.body.currentPassword || req.body["currentPassword"].trim() === "") return next(new errorHandling("Please enter current password to update details", 400));
@@ -94,6 +96,8 @@ module.exports.updateAdmin = async (req, res, next) => {
 // @endpoint: localhost:6000/admin/delete-admin
 module.exports.deleteAdmin = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         const userId = req.user.userId;//from checkJwt controller
         if (!userId) return next(new errorHandling("Something went wrong.", 400));
         if (!req.body) return next(new errorHandling("Please provide currentPassword.", 400));
@@ -123,6 +127,8 @@ module.exports.deleteAdmin = async (req, res, next) => {
 
 module.exports.getAdminById = async (req, res, next) => {
     try {
+        await databaseConnect()
+
 
         const userId = req.user.userId;
         const user = await User.findById(userId, "-password -isDeleted -role")
@@ -145,6 +151,8 @@ module.exports.getAdminById = async (req, res, next) => {
 // @endpoint: localhost:6000/admin/get-admins
 module.exports.getAllAdmin = async (req, res, next) => {
     try {
+        await databaseConnect()
+
 
         let { page = 1 } = req.query;
         page = Math.ceil(page);
@@ -174,6 +182,8 @@ module.exports.getAllAdmin = async (req, res, next) => {
 module.exports.getAdminByEmailOrName = async (req, res, next) => {
 
     try {
+        await databaseConnect()
+
 
         if (!req.query.email && !req.query.name) return next(new errorHandling("Invalid request please provide email or name.", 400));
         let details;
@@ -216,6 +226,7 @@ module.exports.getAdminByEmailOrName = async (req, res, next) => {
 // @endpoint: localhost:6000/admin/logout-admin
 module.exports.logout = (req, res, next) => {
     try {
+
         const token = req.cookies.auth_token;
         if (!token) return next(new errorHandling("Please login to be able to logout.", 403));
         let check;
@@ -244,6 +255,8 @@ module.exports.logout = (req, res, next) => {
 // @endpoint: localhost:6000/admin/remove-admin
 module.exports.removeAdmin = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         const userId = req.params.id;//from url
         if (!userId) return next(new errorHandling(`No ${capaitlize(req.user.role)} id is provided please try again.`, 400));
         const del = await User.findByIdAndUpdate(adminId, { isDeleted: true });
@@ -266,6 +279,8 @@ module.exports.removeAdmin = async (req, res, next) => {
 // @method:POST
 module.exports.forgotPassword = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         // destructuring
         let { email } = req.body;
         if (!email) return next(new errorHandling("Please enter email address.", 400));
@@ -313,6 +328,8 @@ module.exports.forgotPassword = async (req, res, next) => {
 // @endpoint:localhost:6000/reset-password/:code
 module.exports.resetPassword = async (req, res, next) => {
     try {
+        await databaseConnect()
+
         // Check if password and confirmPassword are provided
         if (!req.body.password || !req.body.confirmPassword) {
             return next(new errorHandling("Confirm password or password is missing. Please try again.", 400));

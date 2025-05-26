@@ -4,11 +4,15 @@ const userModel=require("../modles/userModel");
 const bcrypt=require("bcryptjs");
 const jwt=require("jsonwebtoken");
 const {successMessage}=require("../utils/sucessMessage")
+const{ databaseConnect}=require("../utils/databaseConnect")
+
 
 // @method POST
 // @desc:controller to check if admin is deleted or not
 module.exports.checkIfDeleted = async (req, res, next) => {
     try {
+        await databaseConnect()
+        
         let { email, password } = req.body;
         // if no email and password
         if (!email || !password) {
@@ -41,6 +45,8 @@ module.exports.checkIfDeleted = async (req, res, next) => {
 // @endpoint: localhost:6000/admin/login-admin
 module.exports.login = async (req, res, next) => {
     try { 
+        await databaseConnect()
+
         // compare password
         const isMatch = await bcrypt.compare(req.body.password, req.userData.password);
         // match fails
