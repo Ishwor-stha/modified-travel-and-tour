@@ -306,6 +306,7 @@ module.exports.updateTour = async (req, res, next) => {
         next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
     }
 };
+
 module.exports.updateTourDescription = async (req, res, next) => {
     try {
         await databaseConnect()
