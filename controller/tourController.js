@@ -264,7 +264,7 @@ module.exports.updateTour = async (req, res, next) => {
             updatedData["discountedPrice"] = price - (price * (discount / 100));
         }
         if (req.body["tourName"] && req.body["tourName"].toString().trim() !== "") {
-            updatedData["slug"] = slugify(tourName);
+            updatedData["slug"] = slugify(req.body["tourName"]);
         }
         // let oldPhoto;
         // if (req.files) {
@@ -312,7 +312,7 @@ module.exports.updateTourDescription = async (req, res, next) => {
         await databaseConnect()
 
         // id from url
-        let { tourId } = req.params.id;
+        let { tourId } = req.params;
         if (!tourId) return next(new errorHandler("No tour id is given.Please try again.", 400));
         const possiblefield = ["tourId", "shortDescription", "detailedDescription", "highlights"];
         let updatedData = {};
@@ -344,36 +344,27 @@ module.exports.updateTourDescription = async (req, res, next) => {
     }
 };
 
-
 // @method DELETE
-// @desc:controller to delete tour
-// @endpoint:localhost:6000/tour-admin/delete-tour/:id
+// @desc: Controller to delete a tour
+// @endpoint: localhost:6000/tour-admin/delete-tour/:id
 module.exports.deleteTour = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
-        // id from url
-        const id = req.params.id;
-        if (!id) return next(new errorHandler("Tour id is missing.Please try again. ", 400));
-        // querying the database
-        const del = await Tour.findByIdAndDelete(id);
-        const deleteDescrtiption = await Description.findOneAndDelete({ "tourId": id });
-        if (!del || Object.keys(del).length <= 0) return next(new errorHandler("No Tour found.Please try again.", 404));
-        if (!deleteDescrtiption || Object.keys(deleteDescrtiption).length <= 0) return next(new errorHandler("Cannot delete description of tour.", 404));
-        // sending response
+        const { id } = req.params;
+        if (!id) return next(new errorHandler("No tour id is given. Please try again.", 400));
+
+        const deleted = await Tour.findByIdAndDelete(id);
+        if (!deleted) return next(new errorHandler("Tour not found or already deleted.", 404));
+
         res.status(200).json({
             status: true,
-            message: `${del.tourName} is deleted .`
-
+            message: "Tour deleted successfully"
         });
     } catch (error) {
-        // passing error to the error handling middleware
-        next(new errorHandler(error.message, error.statusCode || 500));
-
-
+        next(new errorHandler(error.message || "Something went wrong while deleting the tour.", 500));
     }
-}
-
+};
 
 
 
@@ -383,7 +374,7 @@ module.exports.deleteTour = async (req, res, next) => {
 
 module.exports.enquiry = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect() 
 
         // destructring name,email,contact,message from req.body
         const tourId = req.query.tourId
