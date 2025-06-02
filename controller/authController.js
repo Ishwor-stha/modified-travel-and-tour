@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const crypto = require('crypto');
 const { validateEmail } = require("../utils/emailValidation");
 const { messages } = require("../utils/message"); // Re-adding this import
-// const sendMessage = require("../utils/sendMessage");
 const { sendMessage } = require("../utils/nodemailer");
 const { successMessage } = require("../utils/sucessMessage");
 const { doValidations } = require("../utils/doValidations");
