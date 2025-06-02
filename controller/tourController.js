@@ -16,6 +16,7 @@ const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
 
+
 //@method :GET 
 //@Endpoint: localhost:6000/get-tours
 //@desc:Getting the array of tours in object
@@ -143,32 +144,31 @@ module.exports.postTour = async (req, res, next) => {
 
         const possiblefield = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
             "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
+
         const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
+
         if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
+
+        if (!req.file || req.file.fieldname !== "thumbnail") return next(new errorHandler("The thumbnail of the image is missing", 400));
+
+
         const checkTour = await Tour.find({ tourName: req.body["tourName"] }).select("tourName");
 
 
         if (Object.keys(checkTour).length !== 0) return next(new errorHandler("The tour with this name is already exists.", 400));
         let data = {}
+        data["thumbnail"] = req.file.path
         for (const key of possiblefield) {
             data[key] = req.body[key];
         }
-        try {
-            if (req.body["discount"]) {
-                const price = parseFloat(req.body["originalPrice"]);
-                const discount = parseFloat(req.body["discount"]);
-                data["discountedPrice"] = price - (price * (discount / 100));
-                data["discount"] = req.body["discount"];
-                if (Number.isNaN(price) || Number.isNaN(discount)) {
-                    throw new Error();
-
-                }
+        if (req.body["discount"]) {
+            const price = parseFloat(req.body["originalPrice"]);
+            const discount = parseFloat(req.body["discount"]);
+            if (Number.isNaN(price) || Number.isNaN(discount)) {
+                return next(new errorHandler("Price or Discount must be numbers.", 400));
             }
-        } catch (error) {
-
-            return next(new errorHandler("Price or Discount must be number.", error.statusCode || 400));
-
-
+            data["discountedPrice"] = price - (price * (discount / 100));
+            data["discount"] = req.body["discount"];
         }
         if (req.body.popularity) data["popularity"] = req.body["popularity"];
         data["slug"] = slugify(req.body["tourName"]);
@@ -333,7 +333,7 @@ module.exports.updateTourDescription = async (req, res, next) => {
         }
 
 
-        
+
         // sending response
         res.status(200).json({
             status: true,
@@ -374,7 +374,7 @@ module.exports.deleteTour = async (req, res, next) => {
 
 module.exports.enquiry = async (req, res, next) => {
     try {
-        await databaseConnect() 
+        await databaseConnect()
 
         // destructring name,email,contact,message from req.body
         const tourId = req.query.tourId
@@ -467,3 +467,34 @@ module.exports.bookTour = async (req, res, next) => {
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
 }
+
+
+
+exports.uploadTourImages = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+
+        const tour = await Tour.findById(id);
+        if (!tour) return next(new errorHandler("Tour not found", 404));
+
+        if (!req.files || req.files.length === 0) {
+            return next(new errorHandler("No images uploaded", 400));
+        }
+
+        const uploadedImages = req.files.map(file => ({
+            url: file.path,
+            public_id: file.filename,
+        }));
+
+        tour.images.push(...uploadedImages); // append to existing images
+        await tour.save();
+
+        res.status(200).json({
+            message: "Images uploaded successfully",
+            images: tour.images,
+        });
+    } catch (err) {
+        console.error(err);
+        next(new errorHandler(err.message || "Failed to upload images", 500));
+    }
+};
