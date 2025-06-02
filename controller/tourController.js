@@ -1,12 +1,7 @@
 const Tour = require("../modles/tourModel");
-// const { deleteImage } = require("../utils/deleteImage");
 const errorHandler = require("../utils/errorHandling");
-// const fs = require("fs");
-// const path = require("path");
 const { validateEmail } = require("../utils/emailValidation");
-// const { bookMessage } = require("../utils/bookingMessage");
 const { isValidNepaliPhoneNumber } = require("../utils/validatePhoneNumber");
-// const sendMessage = require("../utils/sendMessage");
 const { sendMessage } = require("../utils/nodemailer");
 const { isValidNumber } = require("../utils/isValidNumber");
 const { enquiryMessage } = require("../utils/enquiryMessage");
@@ -17,48 +12,77 @@ const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
 const { cloudinary } = require("../utils/clouudinary")
 
+// Helper function for checking missing fields
+const checkMissingFields = (body, fields) => {
+    const missing = fields.filter(key => !Object.keys(body).includes(key) || !body[key] || String(body[key]).trim() === "");
+    if (missing.length > 0) {
+        return `${missing.join(", ")} ${missing.length > 1 ? "fields are" : "field is"} missing.`;
+    }
+    return null;
+};
+
+const TOUR_FILTER_FIELDS = ["country", "activity", "grade"];
+const TOUR_POST_FIELDS = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
+    "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
+const DESCRIPTION_FIELDS = ["tourId", "shortDescription", "detailedDescription", "highlights"];
+const ENQUIRY_FIELDS = ["fullName", "startDate", "email", "country", "contact", "question"];
+const BOOKING_FIELDS = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
+const OPTIONAL_BOOKING_FIELDS = ["flightArrivalDate", "flightDepartureDate", "otherInformation"];
+
+// Helper function for calculating discounted price
+const calculateDiscountedPrice = (originalPrice, discount) => {
+    const price = parseFloat(originalPrice);
+    const disc = parseFloat(discount);
+    if (Number.isNaN(price) || Number.isNaN(disc)) {
+        return { error: "Price or Discount must be numbers." };
+    }
+    return { discountedPrice: price - (price * (disc / 100)) };
+};
+
 
 //@method :GET 
 //@Endpoint: localhost:6000/get-tours
 //@desc:Getting the array of tours in object
 module.exports.getTours = async (req, res, next) => {
     try {
-        await databaseConnect()
-        let sort;
-        let condition = [];
-        const fields = ["country", "activity", "grade"];
-        let { page = 1 } = req.query;
+        await databaseConnect();
+        const { page = 1, originalPrice, popularity } = req.query;
+        let sort = {};
 
         // Sorting logic
-        if (req.query.originalPrice || req.query.popularity) {
-            const { originalPrice, popularity } = req.query;
-            if (originalPrice) sort = { originalPrice: originalPrice === "asc" ? 1 : -1 };
-            if (popularity) sort = { popularity: popularity === "asc" ? 1 : -1 };
+        if (originalPrice) {
+            sort.originalPrice = originalPrice === "asc" ? 1 : -1;
+        }
+        if (popularity) {
+            sort.popularity = popularity === "asc" ? 1 : -1;
         }
 
         // Filter logic
-        for (let key in req.query) {
-            if (fields.includes(key)) {
-                condition.push({ [key]: new RegExp(req.query[key], "i") });
+        const conditions = TOUR_FILTER_FIELDS.reduce((acc, field) => {
+            if (req.query[field]) {
+                acc.push({ [field]: new RegExp(req.query[field], "i") });
             }
-        }
+            return acc;
+        }, []);
 
         // Build base query
-        let query = condition.length > 0 ? { $or: condition } : {};
+        const query = conditions.length > 0 ? { $or: conditions } : {};
 
         // Pagination
-        page = parseInt(page);
-        page = page > 0 ? page : 1;
+        const parsedPage = parseInt(page);
+        const currentPage = parsedPage > 0 ? parsedPage : 1;
         const limit = 10;
-        const skip = (page - 1) * limit;
+        const skip = (currentPage - 1) * limit;
 
         // Count total results (for pagination info)
         const totalTours = await Tour.countDocuments(query);
 
         // Build and execute query
-        let tours = Tour.find(query, "-popularity").skip(skip).limit(limit);
-        if (sort) tours = tours.sort(sort);
-        const tourList = await tours;
+        let toursQuery = Tour.find(query, "-popularity").skip(skip).limit(limit);
+        if (Object.keys(sort).length > 0) {
+            toursQuery = toursQuery.sort(sort);
+        }
+        const tourList = await toursQuery;
 
         // If no results
         if (!tourList || tourList.length === 0) {
@@ -67,25 +91,25 @@ module.exports.getTours = async (req, res, next) => {
 
         // Respond
         res.status(200).json({
-            pageNo: page,
+            pageNo: currentPage,
             totalTours,
             status: true,
             tourList,
         });
     } catch (error) {
-        next(new errorHandler(error.message || "Something went wrong", error.statusCode || 500));
+        return next(new errorHandler(error.message || "Something went wrong", error.statusCode || 500));
     }
 };
 
 
 module.exports.getOneTourDescriptionId = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
         const { tourId } = req.params;
         if (!tourId) return next(new errorHandler("No id given of tour.Please try again.", 400));
         const tourDescription = await Description.findOne({ "tourId": tourId });
-        if (!tourDescription || Object.keys(tourDescription).length === 0) return next(new errorHandler("No tour description found.Please try again.", 404));
+        if (!tourDescription) return next(new errorHandler("No tour description found.Please try again.", 404));
         res.status(200).json({
             status: true,
             tourDescription
@@ -99,12 +123,12 @@ module.exports.getOneTourDescriptionId = async (req, res, next) => {
 
 module.exports.getOneTourById = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
         const { id } = req.params;
         if (!id) return next(new errorHandler("No id given of tour.Please try again.", 400));
         const tour = await Tour.findById(id, "-popularity");
-        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.", 404));
+        if (!tour) return next(new errorHandler("No tour found.Please try again.", 404));
         res.status(200).json({
             status: true,
             tour
@@ -120,12 +144,12 @@ module.exports.getOneTourById = async (req, res, next) => {
 //@desc:Getting the detail of  tour 
 module.exports.getOneTour = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
         const { slug } = req.params;
         if (!slug) return next(new errorHandler("No slug given of tour.Please try again.", 400));
         const tour = await Tour.findOne({ slug: slug }, "-popularity");
-        if (!tour || Object.keys(tour).length === 0) return next(new errorHandler("No tour found.Please try again.", 404));
+        if (!tour) return next(new errorHandler("No tour found.Please try again.", 404));
         res.status(200).json({
             status: true,
             tour
@@ -141,49 +165,45 @@ module.exports.getOneTour = async (req, res, next) => {
 //@desc:Adding the tours
 module.exports.postTour = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
-        const possiblefield = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
-            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
-
-        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
-
-        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
+        const missingFieldsError = checkMissingFields(req.body, TOUR_POST_FIELDS);
+        if (missingFieldsError) return next(new errorHandler(missingFieldsError, 400));
 
         if (!req.file || req.file.fieldname !== "thumbnail") return next(new errorHandler("The thumbnail of the image is missing", 400));
 
+        const checkTour = await Tour.findOne({ tourName: req.body.tourName }).select("tourName");
+        if (checkTour) return next(new errorHandler("The tour with this name already exists.", 400));
 
-        const checkTour = await Tour.find({ tourName: req.body["tourName"] }).select("tourName");
-
-
-        if (Object.keys(checkTour).length !== 0) return next(new errorHandler("The tour with this name is already exists.", 400));
-        let data = {}
-        data["thumbnail"] = {
+        let data = {};
+        data.thumbnail = {
             url: req.file.path,
             public_id: req.file.filename
         };
-        for (const key of possiblefield) {
+
+        for (const key of TOUR_POST_FIELDS) {
             data[key] = req.body[key];
         }
-        if (req.body["discount"]) {
-            const price = parseFloat(req.body["originalPrice"]);
-            const discount = parseFloat(req.body["discount"]);
+
+        if (req.body.discount) {
+            const price = parseFloat(req.body.originalPrice);
+            const discount = parseFloat(req.body.discount);
             if (Number.isNaN(price) || Number.isNaN(discount)) {
                 return next(new errorHandler("Price or Discount must be numbers.", 400));
             }
-            data["discountedPrice"] = price - (price * (discount / 100));
-            data["discount"] = req.body["discount"];
+            data.discountedPrice = price - (price * (discount / 100));
+            data.discount = req.body.discount;
         }
-        if (req.body.popularity) data["popularity"] = req.body["popularity"];
-        data["slug"] = slugify(req.body["tourName"]);
+        if (req.body.popularity) data.popularity = req.body.popularity;
+        data.slug = slugify(req.body.tourName);
 
         const create = await Tour.create(data);
         if (!create) return next(new errorHandler("Cannot create the tour.Please try again later", 500));
-        successMessage(res, `${req.body["tourName"]} created sucessfully.`, 200);
+        successMessage(res, `${req.body.tourName} created successfully.`, 200);
 
     } catch (error) {
         if (error.code === 11000 || error.code === "E11000") {
-            return next(new errorHandler("The tour with this name is already exists.", 400));
+            return next(new errorHandler("The tour with this name already exists.", 400));
         }
         if (req.file && req.file.filename) {
             try {
@@ -199,27 +219,26 @@ module.exports.postTour = async (req, res, next) => {
 
 module.exports.createDescriptionOfTour = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
         const { tourId } = req.params;
         if (!tourId) return next(new errorHandler("Tour id is not given.Please provide tour id.", 400));
-        if (!req.body) return next(new errorHandler("No body is given.", 400));
-        req.body["tourId"] = tourId;
-        const possiblefield = ["tourId", "shortDescription", "detailedDescription", "highlights"];
-        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
-        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
-        let data = {}
-        for (const key of possiblefield) {
+        
+        req.body.tourId = tourId; // Ensure tourId is in body for validation
+        const missingFieldsError = checkMissingFields(req.body, DESCRIPTION_FIELDS);
+        if (missingFieldsError) return next(new errorHandler(missingFieldsError, 400));
+
+        let data = {};
+        for (const key of DESCRIPTION_FIELDS) {
             data[key] = req.body[key];
         }
         const create = await Description.create(data);
         if (!create) return next(new errorHandler("Cannot create the description of tour.Please try again later", 500));
-        successMessage(res, `Description created sucessfully.`, 200);
+        successMessage(res, `Description created successfully.`, 200);
 
     } catch (error) {
-
         if (error.code === 11000 || error.code === "E11000") {
-            return next(new errorHandler("The tour description of this touur is already exists.", 400));
+            return next(new errorHandler("The tour description of this tour already exists.", 400));
         }
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
@@ -258,20 +277,17 @@ module.exports.updateTour = async (req, res, next) => {
         const possiblefield = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
             "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
 
-        for (const key of possiblefield) {
-            if (req.body[key]) {
+        for (const key of TOUR_POST_FIELDS) { // Use constant
+            if (req.body[key] !== undefined) { // Check for existence, not just truthiness
                 updatedData[key] = req.body[key];
             }
         }
 
-        if (req.body["discount"]) {
-            const price = parseFloat(req.body["originalPrice"]);
-            const discount = parseFloat(req.body["discount"]);
-            if (Number.isNaN(price) || Number.isNaN(discount)) {
-                return next(new errorHandler("Price or Discount must be numbers.", 400));
-            }
-            updatedData["discountedPrice"] = price - (price * (discount / 100));
-            updatedData["discount"] = req.body["discount"];
+        if (req.body.discount) {
+            const { discountedPrice, error } = calculateDiscountedPrice(req.body.originalPrice, req.body.discount);
+            if (error) return next(new errorHandler(error, 400));
+            updatedData.discountedPrice = discountedPrice;
+            updatedData.discount = req.body.discount;
         }
 
         if (req.body.tourName) {
@@ -298,38 +314,33 @@ module.exports.updateTour = async (req, res, next) => {
 
 module.exports.updateTourDescription = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
         // id from url
-        let { tourId } = req.params;
+        const { tourId } = req.params;
         if (!tourId) return next(new errorHandler("No tour id is given.Please try again.", 400));
-        const possiblefield = ["tourId", "shortDescription", "detailedDescription", "highlights"];
-        let updatedData = {};
-
-
-        for (key of Object.keys(req.body)) {
-            if (possiblefield.includes(key)) {
+        
+        const updatedData = {};
+        for (const key of DESCRIPTION_FIELDS) { // Using the constant array
+            if (req.body[key] !== undefined && String(req.body[key]).trim() !== "") {
                 updatedData[key] = req.body[key];
             }
         }
 
-        // querying to database
-        const updateTour = await Description.findOneAndUpdate({ "tourId": tourId }, updatedData);
-        // console.log(updateTour)
-        if (!updateTour || Object.keys(updateTour).length === 0) {
-
-            return next(new errorHandler("Cannot update Details of tour . Please try again later.", 500));
+        if (Object.keys(updatedData).length === 0) {
+            return next(new errorHandler("No valid fields provided for update.", 400));
         }
 
-
+        // querying to database
+        const updateTour = await Description.findOneAndUpdate({ "tourId": tourId }, updatedData, { new: true });
+        if (!updateTour) {
+            return next(new errorHandler("Cannot update Details of tour. Tour description not found or failed to update.", 404));
+        }
 
         // sending response
-        res.status(200).json({
-            status: true,
-            message: "Details Updated sucessfully"
-        });
+        successMessage(res, "Details Updated successfully", 200);
     } catch (error) {
-        next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
+        return next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
     }
 };
 
@@ -363,38 +374,24 @@ module.exports.deleteTour = async (req, res, next) => {
 
 module.exports.enquiry = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
-        // destructring name,email,contact,message from req.body
-        const tourId = req.query.tourId
-        if (!req.body) return next(new errorHandler(`fullName,startDate,email,country,contact,question field are missing.`, 400));
+        const { tourId } = req.query;
         if (!tourId) return next(new errorHandler("The tour id is missing.", 400));
-        let response
-        let tour
 
-        response = await Tour.findById(tourId);
-        if (!response) return next(new errorHandler("No tour is found from given id.", 404));
-        tour = response
-        delete tour._id;
-        delete tour.__v;
-        delete tour.slug
+        const tour = await Tour.findById(tourId).lean(); // Use .lean() to get a plain JavaScript object
+        if (!tour) return next(new errorHandler("No tour is found from given id.", 404));
 
-        const possiblefield = ["fullName", "startDate", "email", "country", "contact", "question"]
-        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "")
-        // if field is missing 
-        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are" : "field is"} missing.`));
-        // check email if it is valid or not
-        if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
-        // check phone number if it is valid or not
-        if (!isValidNepaliPhoneNumber(req.body["contact"])) return next(new errorHandler("Please enter valid phone number.", 400));
+        const missingFieldsError = checkMissingFields(req.body, ENQUIRY_FIELDS);
+        if (missingFieldsError) return next(new errorHandler(missingFieldsError, 400));
 
-        // concat the first name and last name
-        const name = capaitlize(req.body["fullName"])
-        // create message template form enquiryMessage Function
-        const createMessage = enquiryMessage(name, req.body["email"], req.body["contact"], req.body["startDate"], req.body["question"], req.body["country"], tour);
-        // Send message
-        await sendMessage(res, process.env.NODEMAILER_USER, "Enquiry message", createMessage);//NOTE: ENTER THE REAL COMPANY EMAIL INSTEAD OF NODEMAILER USER.
-        // send sucess response
+        if (!validateEmail(req.body.email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
+        if (!isValidNepaliPhoneNumber(req.body.contact)) return next(new errorHandler("Please enter valid phone number.", 400));
+
+        const name = capaitlize(req.body.fullName);
+        const createMessage = enquiryMessage(name, req.body.email, req.body.contact, req.body.startDate, req.body.question, req.body.country, tour);
+        
+        await sendMessage(res, process.env.NODEMAILER_USER, "Enquiry message", createMessage);
         successMessage(res, "Your question is sent. Please wait for the reply.", 200);
 
     } catch (error) {
@@ -408,46 +405,39 @@ module.exports.enquiry = async (req, res, next) => {
 // @endpoint:localhost:6000/api/book-tour?tourName=*********
 module.exports.bookTour = async (req, res, next) => {
     try {
-
-
+        await databaseConnect();
 
         const { tourName } = req.query;
         if (!tourName) return next(new errorHandler("No name of tour is given on the query.Please try again", 400));
-        if (!req.body) return next(new errorHandler("Please provide body field to proceed further.", 400));
-        let response
-        try {
-            await databaseConnect()
-            response = await Tour.findOne({ slug: tourName });
-            if (!response || Object.keys(response).length === 0) return next(new errorHandler("No tour found.", 404));
 
-        } catch (error) {
-            console.error('DB Error:', error);
-            return next(new errorHandler("Database connection error.", 500));
-        }
-        const possiblefield = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
-        const check = possiblefield.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
-        if (check.length !== 0) return next(new errorHandler(`${check.join(",")} ${check.length > 1 ? "fields are missing" : "field is missing"}.`, 400));
-        if (req.body["contactNumber"] === req.body["emergencyContact"]) return next(new errorHandler("Phone no must be different.Please try again.", 400));
-        // if(isValidNepaliPhoneNumber(req.body["contactNumber"]))return next(new errorHandler("Phone no is not valid.Please try again.", 400));
-        if (!validateEmail(req.body["email"])) return next(new errorHandler("Email address is not valid.Please try again.", 400));
+        const tour = await Tour.findOne({ slug: tourName }).lean();
+        if (!tour) return next(new errorHandler("No tour found.", 404));
+
+        const missingFieldsError = checkMissingFields(req.body, BOOKING_FIELDS);
+        if (missingFieldsError) return next(new errorHandler(missingFieldsError, 400));
+
+        if (req.body.contactNumber === req.body.emergencyContact) return next(new errorHandler("Phone no must be different.Please try again.", 400));
+        if (!validateEmail(req.body.email)) return next(new errorHandler("Email address is not valid.Please try again.", 400));
+        // if (!isValidNepaliPhoneNumber(req.body.contactNumber)) return next(new errorHandler("Phone no is not valid.Please try again.", 400)); // Uncomment if needed
+
         let data = {};
-        for (const key of possiblefield) {
-            if (key === "fullName") req.body[key] = capaitlize(req.body[key]);
-            data[key] = req.body[key]
+        for (const key of BOOKING_FIELDS) {
+            data[key] = key === "fullName" ? capaitlize(req.body[key]) : req.body[key];
         }
-        const optionalFields = ["flightArrivalDate", "flightDepartureDate", "otherInformation"];
 
-        for (const key of optionalFields) {
-            if (req.body[key] && req.body[key].toString().trim() !== "") {
+        for (const key of OPTIONAL_BOOKING_FIELDS) {
+            if (req.body[key] && String(req.body[key]).trim() !== "") {
                 data[key] = req.body[key];
             }
         }
-        req.session.bookingData = data
-        req.session.tourData = response;
+        
+        req.session.bookingData = data;
+        req.session.tourData = tour; // Store the lean object
+
         res.status(200).json({
             message: "Your booking details.",
             status: true,
-            tourDetails: response,
+            tourDetails: tour,
             data,
             paymentUrl: process.env.BASE_URL
         });
@@ -456,36 +446,3 @@ module.exports.bookTour = async (req, res, next) => {
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
 }
-
-
-
-// exports.uploadTourImages = async (req, res, next) => {
-//     try {
-//         const { id } = req.params;
-//         if (!id) return next(new errorHandler("Please provide id of tour.", 400));
-
-
-//         const tour = await Tour.findById(id);
-//         if (!tour) return next(new errorHandler("Tour not found", 404));
-
-//         if (!req.files || req.files.length === 0) {
-//             return next(new errorHandler("Please upload more than one", 400));
-//         }
-
-//         const uploadedImages = req.files.map(file => ({
-//             url: file.path,
-//             public_id: file.filename,
-//         }));
-
-//         tour.images.push(...uploadedImages); // append to existing images
-//         await tour.save();
-
-//         res.status(200).json({
-//             message: "Images uploaded successfully",
-//             images: tour.images,
-//         });
-//     } catch (error) {
-//         console.error(error);
-//         next(new errorHandler(error.message || "Failed to upload images", 500));
-//     }
-// };
