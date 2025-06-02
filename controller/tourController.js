@@ -21,12 +21,18 @@ const checkMissingFields = (body, fields) => {
     return null;
 };
 
+//getTours
 const TOUR_FILTER_FIELDS = ["country", "activity", "grade"];
+//postTour /updateTour
 const TOUR_POST_FIELDS = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
     "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
+//createDescriptionOfTour /updateTourDescription
 const DESCRIPTION_FIELDS = ["tourId", "shortDescription", "detailedDescription", "highlights"];
+//enquiry
 const ENQUIRY_FIELDS = ["fullName", "startDate", "email", "country", "contact", "question"];
+//bookTour
 const BOOKING_FIELDS = ["startingDate", "endingDate", "fullName", "email", "country", "contactNumber", "emergencyContact", "NumberofParticipants", "advancePayment", "payLater"];
+//bookTour
 const OPTIONAL_BOOKING_FIELDS = ["flightArrivalDate", "flightDepartureDate", "otherInformation"];
 
 // Helper function for calculating discounted price
