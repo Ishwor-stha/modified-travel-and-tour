@@ -40,9 +40,9 @@ const calculateDiscountedPrice = (originalPrice, discount) => {
 };
 
 
-//@method :GET 
-//@Endpoint: localhost:6000/get-tours
-//@desc:Getting the array of tours in object
+// @method GET
+// @desc: Getting the array of tours
+// @endpoint: localhost:6000/get-tours
 module.exports.getTours = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -101,7 +101,9 @@ module.exports.getTours = async (req, res, next) => {
     }
 };
 
-
+// @method GET
+// @desc: Getting one tour description by tour ID
+// @endpoint: localhost:6000/get-description/:tourId
 module.exports.getOneTourDescriptionId = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -120,7 +122,9 @@ module.exports.getOneTourDescriptionId = async (req, res, next) => {
     }
 }
 
-
+// @method GET
+// @desc: Getting one tour by ID
+// @endpoint: localhost:6000/get-tour/:id
 module.exports.getOneTourById = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -139,9 +143,9 @@ module.exports.getOneTourById = async (req, res, next) => {
     }
 }
 
-//@method :GET 
-//@Endpoint: localhost:6000/get-one-tour/:slug
-//@desc:Getting the detail of  tour 
+// @method GET
+// @desc: Getting the detail of a tour by slug
+// @endpoint: localhost:6000/get-tour-by-slug/:slug
 module.exports.getOneTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -160,9 +164,9 @@ module.exports.getOneTour = async (req, res, next) => {
     }
 }
 
-//@EndPoint:localhost:6000/tour-admin/post-tour
-//@method:POST
-//@desc:Adding the tours
+// @method POST
+// @desc: Controller to add new tours
+// @endpoint: localhost:6000/tour-admin/post-tour
 module.exports.postTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -217,6 +221,9 @@ module.exports.postTour = async (req, res, next) => {
     }
 }
 
+// @method POST
+// @desc: Controller to create description of a tour
+// @endpoint: localhost:6000/create-description/:tourId
 module.exports.createDescriptionOfTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -244,11 +251,9 @@ module.exports.createDescriptionOfTour = async (req, res, next) => {
     }
 };
 
-
 // @method PATCH
-// @desc:A controller to update the existing data of data base
-// @endpoint:localhost:6000/tour-admin/update-tour/:id
-
+// @desc: Controller to update existing tour data
+// @endpoint: localhost:6000/tour-admin/update-tour/:id
 module.exports.updateTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -274,9 +279,6 @@ module.exports.updateTour = async (req, res, next) => {
         }
 
         // Update other fields
-        const possiblefield = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
-            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
-
         for (const key of TOUR_POST_FIELDS) { // Use constant
             if (req.body[key] !== undefined) { // Check for existence, not just truthiness
                 updatedData[key] = req.body[key];
@@ -312,6 +314,9 @@ module.exports.updateTour = async (req, res, next) => {
 }
 
 
+// @method PATCH
+// @desc: Controller to update tour description
+// @endpoint: localhost:6000/update-description/:tourId
 module.exports.updateTourDescription = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -366,12 +371,9 @@ module.exports.deleteTour = async (req, res, next) => {
     }
 };
 
-
-
 // @method POST
-// @desc:controller to send a enquiry message to owner 
-// @endpoint:localhost:6000/api/ask-question
-
+// @desc: Controller to send an enquiry message to owner
+// @endpoint: localhost:6000/enquiry
 module.exports.enquiry = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -399,10 +401,9 @@ module.exports.enquiry = async (req, res, next) => {
     }
 }
 
-
 // @method POST
-// @desc:controller to send a message to owner if customer books the tour
-// @endpoint:localhost:6000/api/book-tour?tourName=*********
+// @desc: Controller to send a message to owner if customer books the tour
+// @endpoint: localhost:6000/first-book-tour
 module.exports.bookTour = async (req, res, next) => {
     try {
         await databaseConnect();

@@ -1,6 +1,4 @@
-// const { deleteImage } = require("../utils/deleteImage");
 const errorHandler = require("../utils/errorHandling");
-// const fs = require("fs");
 const { sendMessage } = require("../utils/nodemailer");
 const axios = require("axios");
 const crypto = require("crypto");
@@ -9,10 +7,12 @@ const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
 const path = require("path");
 
 
+// @method POST
+// @desc: Controller to initiate payment with Esewa
+// @endpoint: localhost:6000/pay-with-esewa
 module.exports.payWithEsewa = async (req, res, next) => {
     try {
         const bookingData = req.session.bookingData
-        // console.log(bookingData)
         const amount = bookingData["advancePayment"];
         const tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0;
 
@@ -47,10 +47,6 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
         // console.log(pay.request.res.responseUrl)
         res.redirect(pay.request.res.responseUrl)
-        // res.status(200).json({
-        //     status: true,
-        //     paymentData
-        // })
 
 
 
@@ -60,6 +56,9 @@ module.exports.payWithEsewa = async (req, res, next) => {
 }
 
 
+// @method GET
+// @desc: Controller for successful payment callback
+// @endpoint: localhost:6000/:transactionId/payment-success
 module.exports.paymentSucess = async (req, res, next) => {
     try {
 
@@ -107,7 +106,6 @@ module.exports.paymentSucess = async (req, res, next) => {
             return next(new errorHandler("User data or booking data is missing.", 400));
         }
 
-        // console.log(response.data)
         const htmlMessageUser = bookingMessageUser({
             userData,
             tourData,
@@ -137,10 +135,6 @@ module.exports.paymentSucess = async (req, res, next) => {
 
 
         return res.sendFile(path.join(__dirname, 'public', 'sucess.html'));
-        //    return res.status(200).json({
-        //         status:true,
-        //         message:"Payment completed"
-        //    })
 
     } catch (error) {
         req.session.destroy();
@@ -150,18 +144,14 @@ module.exports.paymentSucess = async (req, res, next) => {
 }
 
 
-
-
+// @method GET
+// @desc: Controller for failed payment callback
+// @endpoint: localhost:6000/payment-failure
 module.exports.paymentFailure = async (req, res, next) => {
     try {
         req.session.destroy();
         res.clearCookie('connect.sid');
         return res.sendFile(path.join(__dirname, 'public', 'failure.html'));
-
-        //     return res.status(200).json({
-        //         status:true,
-        //         message:"Payment completed"
-        //    })
 
 
 

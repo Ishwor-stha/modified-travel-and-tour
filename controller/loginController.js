@@ -7,8 +7,9 @@ const {successMessage}=require("../utils/sucessMessage")
 const{ databaseConnect}=require("../utils/databaseConnect")
 
 
-// @method POST
-// @desc:controller to check if admin is deleted or not
+// @method POST (middleware)
+// @desc: Middleware to check if admin is deleted before login
+// @endpoint: Part of localhost:6000/admin/login-admin/
 module.exports.checkIfDeleted = async (req, res, next) => {
     try {
         await databaseConnect()
@@ -41,8 +42,8 @@ module.exports.checkIfDeleted = async (req, res, next) => {
 
 
 // @method POST
-// @desc:controller to login
-// @endpoint: localhost:6000/admin/login-admin
+// @desc: Controller to handle admin login
+// @endpoint: localhost:6000/admin/login-admin/
 module.exports.login = async (req, res, next) => {
     try { 
         await databaseConnect()
