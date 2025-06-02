@@ -3,15 +3,69 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const crypto = require('crypto');
 const { validateEmail } = require("../utils/emailValidation");
-const { messages } = require("../utils/message");
+const { messages } = require("../utils/message"); // Re-adding this import
 // const sendMessage = require("../utils/sendMessage");
 const { sendMessage } = require("../utils/nodemailer");
 const { successMessage } = require("../utils/sucessMessage");
 const { doValidations } = require("../utils/doValidations");
-// const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const User = require("../modles/userModel");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const {databaseConnect}=require("../utils/databaseConnect")
+
+// Helper function to process user data for creation and update
+const processUserData = async (body, isUpdate = false) => {
+    if (!body || Object.keys(body).length === 0) {
+        throw new errorHandling("Empty body field please fill the form.", 400);
+    }
+
+    const possibleFields = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
+    let data = {};
+
+    if (!isUpdate) {
+        const requiredFields = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
+        const missingFields = requiredFields.filter(key => !Object.keys(body).includes(key) || !body[key] || body[key].toString().trim() === "");
+        if (missingFields.length !== 0) {
+            throw new errorHandling(`${missingFields.join()} ${missingFields.length > 1 ? "fields are" : "field is"} missing.`, 400);
+        }
+    } else {
+        const filterField = Object.keys(body).filter(key => possibleFields.includes(key) && body[key] && body[key].toString().trim() !== "");
+        if (!filterField || filterField.length === 0) {
+            throw new errorHandling("Please provide data to update.", 400);
+        }
+    }
+
+    const validationMessage = doValidations(body.email, body.phone, body.password, body.confirmPassword);
+    if (validationMessage) {
+        throw new errorHandling(validationMessage, 400);
+    }
+
+    for (const key of possibleFields) {
+        if (body[key] && body[key].toString().trim() !== "") {
+            if (key === "name") {
+                data[key] = capaitlize(body[key]);
+            } else if (key === "password") {
+                data[key] = await bcrypt.hash(body[key], 10);
+            } else if (key === "confirmPassword") {
+                continue; // Skip confirmPassword
+            } else {
+                data[key] = body[key];
+            }
+        }
+    }
+    return data;
+};
+
+
+
+const GLOBAL_LIMIT = 10; // Define a global constant for pagination limit
+
+// Helper function to handle common catch block logic
+const handleControllerError = (error, next) => {
+    if (error.code === 11000) {
+        return next(new errorHandling("The email address is already in use. Please try to create with another email", error.statusCode || 400));
+    }
+    return next(new errorHandling(error.message, error.statusCode || 500));
+};
 
 
 // @method POST
@@ -19,40 +73,16 @@ const {databaseConnect}=require("../utils/databaseConnect")
 // @endpoint: localhost:6000/api/admin/create-admin
 //   or
 // @endpoint: localhost:6000/api/user/user-login
-
 module.exports.createAdmin = async (req, res, next) => {
     try {
        await  databaseConnect()
-        if (!req.body || Object.keys(req.body).length === 0) return next(new errorHandling("Empty body field please fill the form.", 400));
-        const requireFieds = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
-        const check = requireFieds.filter(key => !Object.keys(req.body).includes(key) || !req.body[key] || req.body[key].toString().trim() === "");
-        if (check.length !== 0) return next(new errorHandling(`${check.join()} ${check.length > 1 ? "fields are" : "field is"} missing.`, 400));
-        const message = doValidations(req.body.email, req.body.phone, req.body.password, req.body.confirmPassword);
-        if (message) return next(new errorHandling(message, 400));
-        const data = {}
-
-        req.body["name"] = capaitlize(req.body.name)
-        for (let key in requireFieds) {
-            key = requireFieds[key];
-            if (key === "confirmPassword") continue;
-            if (key === "password") {
-                data[key] = await bcrypt.hash(req.body[key], 10);
-                continue;
-            }
-            data[key] = req.body[key];
-
-        }
-        // console.log(req.originalUrl)
-        // console.log(data)
+        const data = await processUserData(req.body);
         const createUser = await User.create(data);
         if (!createUser) return next(new errorHandling("Cannot create a admin please try again later.", 500));
         successMessage(res, `${req.body.name} created sucessfully`, 200)
 
     } catch (error) {
-        // console.log(error)
-        if (error.code === 11000) return next((new errorHandling("The email address is already in use.Please try to create with another email", error.statusCode || 400)));
-        return next((new errorHandling(error.message, error.statusCode || 500)));
-
+        handleControllerError(error, next);
     }
 }
 module.exports.updateAdmin = async (req, res, next) => {
@@ -64,19 +94,8 @@ module.exports.updateAdmin = async (req, res, next) => {
         const checkPass = await User.findById(userId, "+password +name")
         const check = await bcrypt.compare(req.body.currentPassword, checkPass.password);
         if (!check) return next(new errorHandling("Password doesnot match.", 400));
-        if (!req.body) return next(new errorHandling("Please provide the body.", 400));
-        const possibleFields = ["name", "gender", "phone", "email", "address", "password", "confirmPassword"];
-        const filterField = Object.keys(req.body).filter(key => possibleFields.includes(key) && req.body[key] && req.body[key].toString().trim() !== "");
-        if (!filterField || filterField.length === 0) return next(errorHandling("Please provide data to update.", 400));
-        const message = doValidations(req.body.email, req.body.phone, req.body.password, req.body.confirmPassword)
-        if (message) return next(new errorHandling(message, 400));
-        const updatedData = {}
-        for (const key of filterField) {
-            if (key === "name") req.body[key] = capaitlize(req.body["name"])
-            if (key === "password") req.body[key] = await bcrypt.hash(req.body[key], 10);
-            if (key === "confirmPassword") continue;
-            updatedData[key] = req.body[key];
-        };
+        
+        const updatedData = await processUserData(req.body, true);
 
         const updateUser = await User.findByIdAndUpdate(userId, updatedData);
         if (!updateUser) return next(new errorHandling("Cannot update the user.Please try again later", 500));
@@ -85,9 +104,7 @@ module.exports.updateAdmin = async (req, res, next) => {
 
 
     } catch (error) {
-        // console.log(error)code: 
-        if (error.code === 11000) return next(new errorHandling("Email is already in use please try different email.", 400))
-        return next(new errorHandling(error.message, error.statusCode || 500))
+        handleControllerError(error, next);
     }
 }
 
@@ -119,8 +136,7 @@ module.exports.deleteAdmin = async (req, res, next) => {
         successMessage(res, `${capaitlize(del.role)}removed successfully.`, 200);
 
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
-
+        handleControllerError(error, next);
     }
 
 }
@@ -140,7 +156,7 @@ module.exports.getAdminById = async (req, res, next) => {
 
 
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+        handleControllerError(error, next);
     }
 }
 
@@ -156,7 +172,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
         let { page = 1 } = req.query;
         page = Math.ceil(page);
-        const limit = 10;
+        const limit = GLOBAL_LIMIT;
         const skip = (page - 1) * limit;
         let trueOrFalse
         if (req.query.isDeleted === "true") trueOrFalse = true;
@@ -172,7 +188,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
             allAdmin
         });
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+        handleControllerError(error, next);
 
     }
 }
@@ -212,7 +228,7 @@ module.exports.getAdminByEmailOrName = async (req, res, next) => {
             details
         });
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+        handleControllerError(error, next);
 
     }
 }
@@ -245,7 +261,7 @@ module.exports.logout = (req, res, next) => {
         successMessage(res, "You have been logged out.", 200);
 
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+        handleControllerError(error, next);
     }
 }
 
@@ -259,7 +275,7 @@ module.exports.removeAdmin = async (req, res, next) => {
 
         const userId = req.params.id;//from url
         if (!userId) return next(new errorHandling(`No ${capaitlize(req.user.role)} id is provided please try again.`, 400));
-        const del = await User.findByIdAndUpdate(adminId, { isDeleted: true });
+        const del = await User.findByIdAndUpdate(userId, { isDeleted: true });
         // check if admin is deleted
         // if (!del) {
         if (!del) {
@@ -268,7 +284,7 @@ module.exports.removeAdmin = async (req, res, next) => {
         successMessage(res, `${capaitlize(req.user.role)} removed successfully.`, 200);
 
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+        handleControllerError(error, next);
 
     }
 
@@ -319,7 +335,7 @@ module.exports.forgotPassword = async (req, res, next) => {
         successMessage(res, "Password reset email has been sent to your email address.", 200);
 
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+        handleControllerError(error, next);
     }
 }
 
@@ -356,7 +372,7 @@ module.exports.resetPassword = async (req, res, next) => {
         let code = req.params.code;
 
         // Find the admin using the reset code
-        let adminCode = await admin.findOne({ code });
+        let adminCode = await User.findOne({ code });
         // no admin
         if (!adminCode) {
             return next(new errorHandling("Code expired or invalid. Please request a new one.", 400));
@@ -377,7 +393,7 @@ module.exports.resetPassword = async (req, res, next) => {
         }
 
         // Update the admin's password and clear reset fields
-        const changeAdmin = await admin.findByIdAndUpdate(
+        const changeAdmin = await User.findByIdAndUpdate(
             adminCode._id,
             {
                 "password": req.body.password,
@@ -403,7 +419,6 @@ module.exports.resetPassword = async (req, res, next) => {
         successMessage(res, "Password changed successfully.", 200);
 
     } catch (error) {
-        return next(new errorHandling(error.message, error.statusCode || 500));
+        handleControllerError(error, next);
     }
 };
-

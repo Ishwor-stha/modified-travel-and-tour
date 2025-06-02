@@ -1,5 +1,4 @@
 const express = require("express");
-// const upload = require("../utils/multer.js");
 const Router = express.Router();
 const { postTour, updateTour, deleteTour, getOneTour, getTours, getOneTourById, createDescriptionOfTour, updateTourDescription, getOneTourDescriptionId,uploadTourImages } = require("../controller/tourController.js");
 const { checkJwt } = require("../middlewares/checkjwt.js");
