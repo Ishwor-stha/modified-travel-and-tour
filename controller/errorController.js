@@ -2,7 +2,7 @@ module.exports = (err, req, res, next) => {
     if (err.code === 'LIMIT_FILE_SIZE') {
         return res.status(400).json({
             status: false,
-            error: 'File too large. Max 1MB allowed.'
+            error: 'File too large. Max 2MB allowed.'
         });
     }
     const statusCode = err.statusCode || 500;  // Default to 500 if statusCode is not set

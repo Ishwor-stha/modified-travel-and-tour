@@ -108,9 +108,10 @@ const tourSchema = new mongoose.Schema({
         type: String
     },
     thumbnail: {
-        type: "String",
-        required: [true, "thumbnail of tour is missing"]
-    },
+        url: String,
+        public_id: String
+    }
+
 
 
 });

@@ -15,6 +15,7 @@ const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
+const { cloudinary } = require("../utils/clouudinary")
 
 
 //@method :GET 
@@ -157,7 +158,10 @@ module.exports.postTour = async (req, res, next) => {
 
         if (Object.keys(checkTour).length !== 0) return next(new errorHandler("The tour with this name is already exists.", 400));
         let data = {}
-        data["thumbnail"] = req.file.path
+        data["thumbnail"] = {
+            url: req.file.path,
+            public_id: req.file.filename
+        };
         for (const key of possiblefield) {
             data[key] = req.body[key];
         }
@@ -178,20 +182,20 @@ module.exports.postTour = async (req, res, next) => {
         successMessage(res, `${req.body["tourName"]} created sucessfully.`, 200);
 
     } catch (error) {
-        // Delete uploaded files immediately on error
-        // if (req.files) {
-        //     const uploadedFilePaths = req.files.map(file => file.path);
-        //     deleteImage(uploadedFilePaths);
-        // }
-        console.log(error);
-
-
         if (error.code === 11000 || error.code === "E11000") {
             return next(new errorHandler("The tour with this name is already exists.", 400));
         }
-        return next(new errorHandler(error.message, error.statusCode || 500));
+        if (req.file && req.file.filename) {
+            try {
+                await cloudinary.uploader.destroy(req.file.filename);
+            } catch (cloudinaryError) {
+                console.error("Failed to delete newly uploaded thumbnail after error:", cloudinaryError.message);
+            }
+        }
+
+        return next(new errorHandler(error.message || "Something went wrong", 500));
     }
-};
+}
 
 module.exports.createDescriptionOfTour = async (req, res, next) => {
     try {
@@ -225,87 +229,72 @@ module.exports.createDescriptionOfTour = async (req, res, next) => {
 // @method PATCH
 // @desc:A controller to update the existing data of data base
 // @endpoint:localhost:6000/tour-admin/update-tour/:id
+
 module.exports.updateTour = async (req, res, next) => {
     try {
-        await databaseConnect()
+        await databaseConnect();
 
-        // id from url
-        let id = req.params.id;
-        if (!id) return next(new errorHandler("No tour id is given.Please try again.", 400));
-        const possiblefield = ["tourName", "country", "grade", "activity", "accomodation", "region", "distance", "startPoint", "endPoint",
-            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDAy", "transportation"];
+        const { id } = req.params;
+        const tour = await Tour.findById(id);
+        if (!tour) return next(new errorHandler("Tour not found", 404));
 
-        let updatedData = {};
+        const updatedData = {};
 
-        if (req.body.discount !== undefined && !isValidNumber(req.body.discount)) {
-            throw new Error("Please enter valid discount number");//straight to the catch block
+        // Handle thumbnail update
+        if (req.file && req.file.fieldname === "thumbnail") {
 
+            if (tour.thumbnail && tour.thumbnail.public_id) {
+                await cloudinary.uploader.destroy(tour.thumbnail.public_id);
+            }
+
+            // Set new thumbnail
+            updatedData["thumbnail"] = {
+                url: req.file.path,
+                public_id: req.file.filename,
+            };
         }
 
-        for (key of Object.keys(req.body)) {
-            if (possiblefield.includes(key)) {
+        // Update other fields
+        const possiblefield = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
+            "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
+
+        for (const key of possiblefield) {
+            if (req.body[key]) {
                 updatedData[key] = req.body[key];
             }
         }
-        if (req.body.discount || (req.body.originalPrice && req.body.originalPrice.toString().trim() !== "")) {
-            const data = await Tour.findById(id, "+discount +originalPrice");
 
-
-            const price = req.body.originalPrice ? parseFloat(req.body.originalPrice) : parseFloat(data.originalPrice);
-
-            const discount = req.body.discount ? parseFloat(req.body.discount) : parseFloat(data.discount);
-
-            if (req.body.discount) {
-                updatedData["discount"] = discount;
+        if (req.body["discount"]) {
+            const price = parseFloat(req.body["originalPrice"]);
+            const discount = parseFloat(req.body["discount"]);
+            if (Number.isNaN(price) || Number.isNaN(discount)) {
+                return next(new errorHandler("Price or Discount must be numbers.", 400));
             }
-
-            // Recalculate price including discount
-            updatedData["originalPrice"] = price
             updatedData["discountedPrice"] = price - (price * (discount / 100));
-        }
-        if (req.body["tourName"] && req.body["tourName"].toString().trim() !== "") {
-            updatedData["slug"] = slugify(req.body["tourName"]);
-        }
-        // let oldPhoto;
-        // if (req.files) {
-        //     updatedData.image = req.files.map(file => file.path); // Update image if new file is uploaded
-        //     oldPhoto = await Tour.findById(id, "image");
-
-        // }
-
-
-
-        // querying to database
-        const updateTour = await Tour.findByIdAndUpdate(id, updatedData);
-        // console.log(updateTour)
-        if (!updateTour || Object.keys(updateTour).length === 0) {
-            // if (req.files) { 
-            //     deleteImage(updatedData.image); 
-            // } 
-            return next(new errorHandler("Cannot update tour. Please try again later.", 500));
+            updatedData["discount"] = req.body["discount"];
         }
 
-        // Delete old image if a new one was uploaded 
-        // if (req.files && oldPhoto) { 
-        //     deleteImage(oldPhoto.image);
+        if (req.body.tourName) {
+            updatedData["slug"] = slugify(req.body.tourName);
+        }
 
-        // }
+        const updatedTour = await Tour.findByIdAndUpdate(id, updatedData, { new: true });
+        if (!updatedTour) return next(new errorHandler("Failed to update tour.", 500));
 
-        // sending response
-        res.status(200).json({
-            status: true,
-            name: updateTour.name,
-            updatedData
-        });
+        successMessage(res, `Tour updated successfully.`, 200);
     } catch (error) {
-        // if (req.files) {
-        //     const uploadedFilePaths = req.files.map(file => file.path);
-        //     deleteImage(uploadedFilePaths);
-        // }
+        if (req.file && req.file.filename) {
+            try {
+                await cloudinary.uploader.destroy(req.file.filename);
+            } catch (cloudinaryError) {
+                console.error("Failed to delete newly uploaded thumbnail after error:", cloudinaryError.message);
+            }
+        }
 
-        next(new errorHandler(error.message || "Something went wrong.Please try again.", 500));
+        return next(new errorHandler(error.message || "Something went wrong", 500));
     }
-};
+}
+
 
 module.exports.updateTourDescription = async (req, res, next) => {
     try {
@@ -470,31 +459,33 @@ module.exports.bookTour = async (req, res, next) => {
 
 
 
-exports.uploadTourImages = async (req, res, next) => {
-    try {
-        const { id } = req.params;
+// exports.uploadTourImages = async (req, res, next) => {
+//     try {
+//         const { id } = req.params;
+//         if (!id) return next(new errorHandler("Please provide id of tour.", 400));
 
-        const tour = await Tour.findById(id);
-        if (!tour) return next(new errorHandler("Tour not found", 404));
 
-        if (!req.files || req.files.length === 0) {
-            return next(new errorHandler("No images uploaded", 400));
-        }
+//         const tour = await Tour.findById(id);
+//         if (!tour) return next(new errorHandler("Tour not found", 404));
 
-        const uploadedImages = req.files.map(file => ({
-            url: file.path,
-            public_id: file.filename,
-        }));
+//         if (!req.files || req.files.length === 0) {
+//             return next(new errorHandler("Please upload more than one", 400));
+//         }
 
-        tour.images.push(...uploadedImages); // append to existing images
-        await tour.save();
+//         const uploadedImages = req.files.map(file => ({
+//             url: file.path,
+//             public_id: file.filename,
+//         }));
 
-        res.status(200).json({
-            message: "Images uploaded successfully",
-            images: tour.images,
-        });
-    } catch (err) {
-        console.error(err);
-        next(new errorHandler(err.message || "Failed to upload images", 500));
-    }
-};
+//         tour.images.push(...uploadedImages); // append to existing images
+//         await tour.save();
+
+//         res.status(200).json({
+//             message: "Images uploaded successfully",
+//             images: tour.images,
+//         });
+//     } catch (error) {
+//         console.error(error);
+//         next(new errorHandler(error.message || "Failed to upload images", 500));
+//     }
+// };

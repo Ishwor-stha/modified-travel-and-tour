@@ -10,7 +10,7 @@ const multer = require('multer');
 const { storage } = require('../utils/clouudinary.js'); 
 const upload = multer({
     storage,
-    limits: { fileSize: 1 * 1024 * 1024 }
+    limits: { fileSize: 2 * 1024 * 1024 }
 });
 
 
@@ -25,10 +25,9 @@ Router.route('/get-tour/:id').get(getOneTourById)
 
 Router.route("/tour-admin/post-tour").post(checkJwt, upload.single('thumbnail'), postTour);
 
-Router.route("/tours/:id/images").post(checkJwt, upload.array('images',10), postTour);
 
 
-Router.route("/tour-admin/update-tour/:id").patch(checkJwt, /*upload.array('image', 4),*/ updateTour);
+Router.route("/tour-admin/update-tour/:id").patch(checkJwt, upload.single('thumbnail'), updateTour);
 
 Router.route("/create-description/:tourId").post(checkJwt, createDescriptionOfTour)
 
@@ -42,6 +41,7 @@ Router.route("/tour-admin/delete-tour/:id").delete(checkJwt, deleteTour);
 
 Router.route("/get-tour-by-slug/:slug").get(getOneTour);
 
+// Router.route("/tours/:id/images").post(checkJwt, upload.array('images',10), postTour);
 
 
 
