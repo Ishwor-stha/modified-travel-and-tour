@@ -11,6 +11,7 @@ const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
 const { cloudinary } = require("../utils/clouudinary")
+const upload = require("../utils/multer"); // Import multer upload instance
 
 // Helper function for checking missing fields
 const checkMissingFields = (body, fields) => {
@@ -453,3 +454,51 @@ module.exports.bookTour = async (req, res, next) => {
         return next(new errorHandler(error.message, error.statusCode || 500));
     }
 }
+
+module.exports.uploadImageForTour = async (req, res, next) => {
+    try {
+        await databaseConnect();
+
+        // Use multer to handle multiple image uploads (max 10)
+        upload.array('images', 10)(req, res, async (err) => {
+            if (err) {
+                // Handle Multer errors (e.g., file type, file size, too many files)
+                return next(new errorHandler(err.message, 400));
+            }
+
+            const { id } = req.params;
+            if (!id) {
+                return next(new errorHandler("Tour ID is missing. Please provide a tour ID.", 400));
+            }
+
+            if (!req.files || req.files.length === 0) {
+                return next(new errorHandler("No images uploaded. Please upload at least one image.", 400));
+            }
+
+            if (req.files.length > 10) {
+                return next(new errorHandler("You can upload a maximum of 10 images.", 400));
+            }
+
+            const tour = await Tour.findById(id);
+            if (!tour) {
+                return next(new errorHandler("Tour not found.", 404));
+            }
+
+            // Map uploaded files to the schema format
+            const newImages = req.files.map(file => ({
+                url: file.path,
+                public_id: file.filename
+            }));
+
+            // Add new images to the existing images array
+            tour.images.push(...newImages);
+
+            // Save the updated tour
+            await tour.save();
+
+            successMessage(res, "Images uploaded successfully.", 200);
+        });
+    } catch (error) {
+        return next(new errorHandler(error.message || "Something went wrong while uploading images.", 500));
+    }
+};
