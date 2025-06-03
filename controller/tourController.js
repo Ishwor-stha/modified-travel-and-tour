@@ -3,7 +3,6 @@ const errorHandler = require("../utils/errorHandling");
 const { validateEmail } = require("../utils/emailValidation");
 const { isValidNepaliPhoneNumber } = require("../utils/validatePhoneNumber");
 const { sendMessage } = require("../utils/nodemailer");
-const { isValidNumber } = require("../utils/isValidNumber");
 const { enquiryMessage } = require("../utils/enquiryMessage");
 const { successMessage } = require("../utils/sucessMessage");
 const slugify = require("slugify");
@@ -11,7 +10,7 @@ const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
 const { cloudinary } = require("../utils/clouudinary")
-const upload = require("../utils/multer"); // Import multer upload instance
+
 
 // Helper function for checking missing fields
 const checkMissingFields = (body, fields) => {
