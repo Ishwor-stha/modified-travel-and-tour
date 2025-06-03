@@ -1,6 +1,6 @@
 const express = require("express");
 const Router = express.Router();
-const { postTour, updateTour, deleteTour, getOneTour, getTours, getOneTourById, createDescriptionOfTour, updateTourDescription, getOneTourDescriptionId,uploadTourImages } = require("../controller/tourController.js");
+const { postTour, updateTour, deleteTour, getOneTour, getTours, getOneTourById, createDescriptionOfTour, updateTourDescription, getOneTourDescriptionId,uploadImageForTour } = require("../controller/tourController.js");
 const { checkJwt } = require("../middlewares/checkjwt.js");
 
 
@@ -40,7 +40,7 @@ Router.route("/tour-admin/delete-tour/:id").delete(checkJwt, deleteTour);
 
 Router.route("/get-tour-by-slug/:slug").get(getOneTour);
 
-// Router.route("/tours/:id/images").post(checkJwt, upload.array('images',10), postTour);
+Router.route("/tours/:id/images").post(checkJwt, upload.array('images',10), uploadImageForTour);
 
 
 
