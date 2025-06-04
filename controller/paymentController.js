@@ -9,7 +9,7 @@ const path = require("path");
 
 // @method POST
 // @desc: Controller to initiate payment with Esewa
-// @endpoint: localhost:6000/pay-with-esewa
+// @endpoint: localhost:6000/api/tour/pay-with-esewa
 module.exports.payWithEsewa = async (req, res, next) => {
     try {
         const bookingData = req.session.bookingData
@@ -58,7 +58,7 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 // @method GET
 // @desc: Controller for successful payment callback
-// @endpoint: localhost:6000/:transactionId/payment-success
+// @endpoint: localhost:6000/api/tour/:transactionId/payment-success
 module.exports.paymentSucess = async (req, res, next) => {
     try {
 
@@ -146,7 +146,7 @@ module.exports.paymentSucess = async (req, res, next) => {
 
 // @method GET
 // @desc: Controller for failed payment callback
-// @endpoint: localhost:6000/payment-failure
+// @endpoint: localhost:6000/api/tour/payment-failure
 module.exports.paymentFailure = async (req, res, next) => {
     try {
         req.session.destroy();
