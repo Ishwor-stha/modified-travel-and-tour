@@ -9,7 +9,8 @@ const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
-const { cloudinary } = require("../utils/clouudinary")
+const { cloudinary } = require("../utils/clouudinary");
+const { isValidNumber } = require("../utils/isValidNumber");
 
 
 // Helper function for checking missing fields
@@ -37,11 +38,13 @@ const OPTIONAL_BOOKING_FIELDS = ["flightArrivalDate", "flightDepartureDate", "ot
 
 // Helper function for calculating discounted price
 const calculateDiscountedPrice = (originalPrice, discount) => {
+ 
     const price = parseFloat(originalPrice);
     const disc = parseFloat(discount);
     if (Number.isNaN(price) || Number.isNaN(disc)) {
         return { error: "Price or Discount must be numbers." };
     }
+    if(isValidNumber(discount )) return {error:"The discount must be in between 0-100."};
     return { discountedPrice: price - (price * (disc / 100)) };
 };
 
@@ -201,6 +204,7 @@ module.exports.postTour = async (req, res, next) => {
             if (Number.isNaN(price) || Number.isNaN(discount)) {
                 return next(new errorHandler("Price or Discount must be numbers.", 400));
             }
+            if(isValidNumber(discount )) return next(new errorHandler("The discount must be in between 0-100.", 400));
             data.discountedPrice = price - (price * (discount / 100));
             data.discount = req.body.discount;
         }
