@@ -97,32 +97,43 @@ To set up the project locally, follow these steps:
 
 ## API Endpoints
 
-The API follows a RESTful design. Here are some of the key endpoints:
+The API follows a RESTful design. All endpoints are prefixed with `/api/`.
 
-*   **Authentication:**
-    *   `POST /api/v1/users/signup` - Register a new user
-    *   `POST /api/v1/users/login` - Log in a user
-    *   `GET /api/v1/users/logout` - Log out a user
-    *   `GET /api/v1/users/me` - Get current user's profile
-    *   `PATCH /api/v1/users/updatePassword` - Update user password
-    *   `PATCH /api/v1/users/updateMe` - Update user details
-    *   `DELETE /api/v1/users/deleteMe` - Delete current user account
+### Admin Routes (`/api/admin/`)
 
-*   **Tours:**
-    *   `GET /api/v1/tours` - Get all tours
-    *   `GET /api/v1/tours/:id` - Get a single tour by ID
-    *   `POST /api/v1/tours` - Create a new tour (Admin only)
-    *   `PATCH /api/v1/tours/:id` - Update a tour (Admin only)
-    *   `DELETE /api/v1/tours/:id` - Delete a tour (Admin only)
+*   `GET /api/admin/get-admins` - Get all admin users (requires JWT)
+*   `GET /api/admin/get` - Get admin by email or name (requires JWT)
+*   `GET /api/admin/get-admin/` - Get current admin details by ID (requires JWT)
+*   `POST /api/admin/create-admin/` - Create a new admin user (requires JWT)
+*   `POST /api/admin/login-admin/` - Log in an admin user
+*   `DELETE /api/admin/logout-admin/` - Log out an admin user (requires JWT)
+*   `PATCH /api/admin/update-admin/` - Update admin details (requires JWT)
+*   `DELETE /api/admin/remove-admin/:id` - Remove an admin by ID (requires JWT)
+*   `DELETE /api/admin/delete-account` - Delete current admin account (requires JWT)
+*   `POST /api/admin/forget-password` - Initiate password reset for an admin
+*   `PATCH /api/admin/reset-password/:code` - Reset admin password using a code
 
-*   **Bookings:**
-    *   `POST /api/v1/bookings/checkout-session/:tourId` - Create a checkout session for a tour
-    *   `GET /api/v1/bookings` - Get all bookings (Admin only)
-    *   `GET /api/v1/bookings/my-bookings` - Get bookings for the current user
+### Tour Routes (`/api/`)
 
-*   **Enquiries:**
-    *   `POST /api/v1/enquiries` - Submit a new enquiry
-    *   `GET /api/v1/enquiries` - Get all enquiries (Admin only)
+*   `GET /api/get-tours` - Get all tours (with filtering, sorting, pagination)
+*   `GET /api/get-tour/:id` - Get a single tour by ID
+*   `GET /api/get-tour-by-slug/:slug` - Get a single tour by slug
+*   `POST /api/tour-admin/post-tour` - Create a new tour (requires JWT, handles thumbnail upload)
+*   `PATCH /api/tour-admin/update-tour/:id` - Update an existing tour (requires JWT, handles thumbnail update)
+*   `DELETE /api/tour-admin/delete-tour/:id` - Delete a tour (requires JWT)
+*   `POST /api/tours/:id/images` - Upload images for a specific tour (requires JWT)
+*   `DELETE /api/delete/:tourId/images/:publicId` - Delete a specific image from a tour (requires JWT)
+*   `POST /api/create-description/:tourId` - Create a description for a tour (requires JWT)
+*   `PATCH /api/update-description/:tourId` - Update a tour's description (requires JWT)
+*   `GET /api/get-description/:tourId` - Get a tour's description by tour ID
+
+### Booking & Enquiry Routes (`/api/tour/`)
+
+*   `POST /api/tour/first-book-tour` - Initiate a tour booking (collects details, prepares for payment)
+*   `POST /api/tour/enquiry` - Submit an enquiry about a tour
+*   `POST /api/tour/pay-with-esewa` - Initiate payment with Esewa
+*   `GET /api/tour/:transactionId/payment-success` - Callback for successful Esewa payment
+*   `GET /api/tour/payment-failure` - Callback for failed Esewa payment
 
 ## Folder Structure
 
