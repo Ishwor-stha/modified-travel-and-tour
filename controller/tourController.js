@@ -48,7 +48,7 @@ const calculateDiscountedPrice = (originalPrice, discount) => {
 
 // @method GET
 // @desc: Getting the array of tours
-// @endpoint: localhost:6000/get-tours
+// @endpoint: localhost:6000/api/get-tours
 module.exports.getTours = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -109,7 +109,7 @@ module.exports.getTours = async (req, res, next) => {
 
 // @method GET
 // @desc: Getting one tour description by tour ID
-// @endpoint: localhost:6000/get-description/:tourId
+// @endpoint: localhost:6000/api/get-description/:tourId
 module.exports.getOneTourDescriptionId = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -130,7 +130,7 @@ module.exports.getOneTourDescriptionId = async (req, res, next) => {
 
 // @method GET
 // @desc: Getting one tour by ID
-// @endpoint: localhost:6000/get-tour/:id
+// @endpoint: localhost:6000/api/get-tour/:id
 module.exports.getOneTourById = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -151,7 +151,7 @@ module.exports.getOneTourById = async (req, res, next) => {
 
 // @method GET
 // @desc: Getting the detail of a tour by slug
-// @endpoint: localhost:6000/get-tour-by-slug/:slug
+// @endpoint: localhost:6000/api/get-tour-by-slug/:slug
 module.exports.getOneTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -172,7 +172,7 @@ module.exports.getOneTour = async (req, res, next) => {
 
 // @method POST
 // @desc: Controller to add new tours
-// @endpoint: localhost:6000/tour-admin/post-tour
+// @endpoint: localhost:6000/api/tour-admin/post-tour
 module.exports.postTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -229,7 +229,7 @@ module.exports.postTour = async (req, res, next) => {
 
 // @method POST
 // @desc: Controller to create description of a tour
-// @endpoint: localhost:6000/create-description/:tourId
+// @endpoint: localhost:6000/api/create-description/:tourId
 module.exports.createDescriptionOfTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -259,7 +259,7 @@ module.exports.createDescriptionOfTour = async (req, res, next) => {
 
 // @method PATCH
 // @desc: Controller to update existing tour data
-// @endpoint: localhost:6000/tour-admin/update-tour/:id
+// @endpoint: localhost:6000/api/tour-admin/update-tour/:id
 module.exports.updateTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -322,7 +322,7 @@ module.exports.updateTour = async (req, res, next) => {
 
 // @method PATCH
 // @desc: Controller to update tour description
-// @endpoint: localhost:6000/update-description/:tourId
+// @endpoint: localhost:6000/api/update-description/:tourId
 module.exports.updateTourDescription = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -357,7 +357,7 @@ module.exports.updateTourDescription = async (req, res, next) => {
 
 // @method DELETE
 // @desc: Controller to delete a tour
-// @endpoint: localhost:6000/tour-admin/delete-tour/:id
+// @endpoint: localhost:6000/api/tour-admin/delete-tour/:id
 module.exports.deleteTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -379,7 +379,7 @@ module.exports.deleteTour = async (req, res, next) => {
 
 // @method POST
 // @desc: Controller to send an enquiry message to owner
-// @endpoint: localhost:6000/enquiry
+// @endpoint: localhost:6000/api/enquiry
 module.exports.enquiry = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -409,7 +409,7 @@ module.exports.enquiry = async (req, res, next) => {
 
 // @method POST
 // @desc: Controller to send a message to owner if customer books the tour
-// @endpoint: localhost:6000/first-book-tour
+// @endpoint: localhost:6000/api/first-book-tour
 module.exports.bookTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -454,6 +454,9 @@ module.exports.bookTour = async (req, res, next) => {
     }
 }
 
+// @method POST
+// @desc: Controller to upload images for a tour
+// @endpoint: localhost:6000/api/tours/:id/images
 module.exports.uploadImageForTour = async (req, res, next) => {
     try {
         await databaseConnect();
@@ -496,6 +499,9 @@ module.exports.uploadImageForTour = async (req, res, next) => {
 }
 
 
+// @method DELETE
+// @desc: Controller to delete one image of a tour
+// @endpoint: localhost:6000/api/delete/:tourId/images/:publicId
 module.exports.deleteOneImageOfTour = async (req, res, next) => {
     try {
 

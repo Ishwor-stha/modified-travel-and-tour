@@ -69,7 +69,7 @@ const handleControllerError = (error, next) => {
 
 // @method POST
 // @desc: Controller to create new admin or user
-// @endpoint: localhost:6000/admin/create-admin/
+// @endpoint: localhost:6000/api/admin/create-admin/
 module.exports.createAdmin = async (req, res, next) => {
     try {
        await  databaseConnect()
@@ -85,7 +85,7 @@ module.exports.createAdmin = async (req, res, next) => {
 
 // @method PATCH
 // @desc: Controller to update admin details
-// @endpoint: localhost:6000/admin/update-admin/
+// @endpoint: localhost:6000/api/admin/update-admin/
 module.exports.updateAdmin = async (req, res, next) => {
     try {
         await databaseConnect()
@@ -111,7 +111,7 @@ module.exports.updateAdmin = async (req, res, next) => {
 
 // @method DELETE
 // @desc: Controller to delete admin account
-// @endpoint: localhost:6000/admin/delete-account
+// @endpoint: localhost:6000/api/admin/delete-account
 module.exports.deleteAdmin = async (req, res, next) => {
     try {
         await databaseConnect()
@@ -144,7 +144,7 @@ module.exports.deleteAdmin = async (req, res, next) => {
 
 // @method GET
 // @desc: Controller to get admin details by ID
-// @endpoint: localhost:6000/admin/get-admin/
+// @endpoint: localhost:6000/api/admin/get-admin/
 module.exports.getAdminById = async (req, res, next) => {
     try {
         await databaseConnect()
@@ -168,7 +168,7 @@ module.exports.getAdminById = async (req, res, next) => {
 
 // @method GET
 // @desc: Controller to get all admin list (active or deleted)
-// @endpoint: localhost:6000/admin/get-admins
+// @endpoint: localhost:6000/api/admin/get-admins
 module.exports.getAllAdmin = async (req, res, next) => {
     try {
         await databaseConnect()
@@ -199,7 +199,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
 
 // @method GET
 // @desc: Controller to get admin by email or name
-// @endpoint: localhost:6000/admin/get
+// @endpoint: localhost:6000/api/admin/get
 module.exports.getAdminByEmailOrName = async (req, res, next) => {
 
     try {
@@ -240,7 +240,7 @@ module.exports.getAdminByEmailOrName = async (req, res, next) => {
 
 // @method DELETE
 // @desc: Controller to delete cookie from the user (logout)
-// @endpoint: localhost:6000/admin/logout-admin/
+// @endpoint: localhost:6000/api/admin/logout-admin/
 module.exports.logout = (req, res, next) => {
     try {
 
@@ -269,7 +269,7 @@ module.exports.logout = (req, res, next) => {
 
 // @method DELETE
 // @desc: Controller to remove an admin by ID
-// @endpoint: localhost:6000/admin/remove-admin/:id
+// @endpoint: localhost:6000/api/admin/remove-admin/:id
 module.exports.removeAdmin = async (req, res, next) => {
     try {
         await databaseConnect()
@@ -293,7 +293,7 @@ module.exports.removeAdmin = async (req, res, next) => {
 
 // @method POST
 // @desc: Controller for forgetting password and sending reset email
-// @endpoint: localhost:6000/admin/forget-password
+// @endpoint: localhost:6000/api/admin/forget-password
 module.exports.forgotPassword = async (req, res, next) => {
     try {
         await databaseConnect()
@@ -342,7 +342,7 @@ module.exports.forgotPassword = async (req, res, next) => {
 
 // @method PATCH
 // @desc: Controller to reset password with code
-// @endpoint: localhost:6000/admin/reset-password/:code
+// @endpoint: localhost:6000/api/admin/reset-password/:code
 module.exports.resetPassword = async (req, res, next) => {
     try {
         await databaseConnect()
