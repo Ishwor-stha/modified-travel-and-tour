@@ -1,12 +1,13 @@
 const express = require("express");
 const Router = express.Router();
-const { postTour, updateTour, deleteTour, getOneTour, getTours, getOneTourById, createDescriptionOfTour, updateTourDescription, getOneTourDescriptionId,uploadImageForTour } = require("../controller/tourController.js");
+const { postTour, updateTour, deleteTour, getOneTour, getTours, getOneTourById,
+    createDescriptionOfTour, updateTourDescription, getOneTourDescriptionId, uploadImageForTour, deleteOneImageOfTour } = require("../controller/tourController.js");
 const { checkJwt } = require("../middlewares/checkjwt.js");
 
 
 
 const multer = require('multer');
-const { storage } = require('../utils/clouudinary.js'); 
+const { storage } = require('../utils/clouudinary.js');
 const upload = multer({
     storage,
     limits: { fileSize: 2 * 1024 * 1024 }
@@ -40,7 +41,9 @@ Router.route("/tour-admin/delete-tour/:id").delete(checkJwt, deleteTour);
 
 Router.route("/get-tour-by-slug/:slug").get(getOneTour);
 
-Router.route("/tours/:id/images").post(checkJwt, upload.array('images',10), uploadImageForTour);
+Router.route("/tours/:id/images").post(checkJwt, upload.array('images', 10), uploadImageForTour);
+
+Router.route("/delete/:tourId/images/:publicId").delete(checkJwt, deleteOneImageOfTour);
 
 
 

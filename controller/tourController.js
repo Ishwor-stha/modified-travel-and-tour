@@ -496,3 +496,31 @@ module.exports.uploadImageForTour = async (req, res, next) => {
 }
 
 
+module.exports.deleteOneImageOfTour = async (req, res, next) => {
+    try {
+
+        await databaseConnect();
+
+        const { tourId, publicId } = req.params
+        if (!tourId || !publicId) return next(new errorHandler("Tour id or Public id is not passed through params.Please check and request again", 400));
+        const tour = await Tour.findById(tourId);
+        if (!tour) return next(new errorHandler("Cannot find the tour from given id.", 404));
+        const imageIndex = tour.images.findIndex(img => img.public_id === publicId);
+        if (imageIndex === -1) {
+            return next(new errorHandler("Image not found in this tour.", 404));
+        }
+
+        await cloudinary.uploader.destroy(publicId);
+
+        // Remove the image from the tour's images array
+        tour.images.splice(imageIndex, 1);
+
+        // Save the updated tour document
+        await tour.save();
+
+        successMessage(res, "Image deleted successfully.", 200);
+
+    } catch (error) {
+        return next(new errorHandler(error.message || "Something went wrong while deleting the image.", 500));
+    }
+}
