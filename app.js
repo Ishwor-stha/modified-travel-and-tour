@@ -10,6 +10,7 @@ const bookigAndEnquiryRoute = require("./route/enquiryAndBookRoute")
 const { sanitize } = require("./utils/filter")
 const app = express();
 const session = require("express-session");
+const MongoStore = require('connect-mongo'); // Import MongoStore
 const path=require("path");
 // security packages
 const { limiter } = require("./utils/rateLimit");
@@ -51,6 +52,12 @@ app.use(session({
     secret: process.env.SessionSecret,
     resave: false,
     saveUninitialized: false,
+    store: MongoStore.create({
+        mongoUrl: process.env.DATABASE, //  MongoDB connection string
+        ttl: 1000 * 60 * 60, // Session TTL in seconds (1 hour)
+        autoRemove: 'interval',
+        autoRemoveInterval: 10 // In minutes. Removes expired sessions every 10 minutes
+    }),
     cookie: {
         secure: process.env.NODE_ENV === 'production', // Set to false for local HTTP testing
         sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Adjusted for local development
