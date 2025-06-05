@@ -224,7 +224,7 @@
                 <h3><strong>GET</strong> <code>/api/admin/get-admins</code></h3>
                 <ul>
                     <li>Description: Retrieves a list of all administrators.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/get-admins</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/get-admins</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="query-params"><strong>Optional Query Parameters:</strong> <code>page</code> (e.g., <code>?page=1</code>), <code>isDeleted</code> (e.g., <code>?isDeleted=true</code>)</li>
                 </ul>
@@ -234,7 +234,7 @@
                 <h3><strong>GET</strong> <code>/api/admin/get</code></h3>
                 <ul>
                     <li>Description: Retrieves an administrator by their email or name.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/get?email=admin@example.com</code> or <code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/get?name=AdminName</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/get?email=admin@example.com</code> or <code>https://modified-travel-and-tour.onrender.com/api/admin/get?name=AdminName</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="query-params"><strong>Required Query Parameters:</strong> <code>email</code> OR <code>name</code></li>
                 </ul>
@@ -244,7 +244,7 @@
                 <h3><strong>GET</strong> <code>/api/admin/get-admin/:id</code></h3>
                 <ul>
                     <li>Description: Retrieves an administrator by their ID.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/get-admin/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/get-admin/654321abcdef</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>id</code> (required)</li>
                 </ul>
@@ -254,7 +254,7 @@
                 <h3><strong>POST</strong> <code>/api/admin/create-admin/</code></h3>
                 <ul>
                     <li>Description: Creates a new administrator account.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/create-admin/</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/create-admin/</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>name</code>, <code>gender</code>, <code>phone</code>, <code>email</code>, <code>address</code>, <code>password</code>, <code>confirmPassword</code></li>
                     <li>Body: <div class="example-code"><code>{ "name": "New Admin", "gender": "Male", "phone": "1234567890", "email": "newadmin@example.com", "address": "123 Admin St", "password": "securepassword", "confirmPassword": "securepassword" }</code></div></li>
@@ -265,7 +265,7 @@
                 <h3><strong>POST</strong> <code>/api/admin/login-admin/</code></h3>
                 <ul>
                     <li>Description: Authenticates an administrator and provides a login token.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/login-admin/</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/login-admin/</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>email</code>, <code>password</code></li>
                     <li>Body: <div class="example-code"><code>{ "email": "admin@example.com", "password": "yourpassword" }</code></div></li>
@@ -276,7 +276,7 @@
                 <h3><strong>DELETE</strong> <code>/api/admin/logout-admin/</code></h3>
                 <ul>
                     <li>Description: Logs out the currently authenticated administrator.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/logout-admin/</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/logout-admin/</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                 </ul>
             </div>
@@ -285,7 +285,7 @@
                 <h3><strong>PATCH</strong> <code>/api/admin/update-admin/</code></h3>
                 <ul>
                     <li>Description: Updates the details of an existing administrator.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/update-admin/</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/update-admin/</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="required-fields"><strong>Required Body Fields :</strong> <code>"currentPassword" if the password is being updated</code></li>
                     <li class="optional-fields"><strong>Optional Body Fields:</strong> <code>name</code>, <code>gender</code>, <code>phone</code>, <code>email</code>, <code>address</code>, <code>password</code>, <code>confirmPassword</code> (at least one of these must be provided for update)</li>
@@ -297,7 +297,7 @@
                 <h3><strong>DELETE</strong> <code>/api/admin/remove-admin/:id</code></h3>
                 <ul>
                     <li>Description: Removes an administrator account by ID.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/remove-admin/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/remove-admin/654321abcdef</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>id</code> (required)</li>
                 </ul>
@@ -307,7 +307,7 @@
                 <h3><strong>DELETE</strong> <code>/api/admin/delete-account</code></h3>
                 <ul>
                     <li>Description: Deletes the currently authenticated administrator's own account.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/delete-account</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/delete-account</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>currentPassword</code></li>
                     <li>Body: <div class="example-code"><code>{ "currentPassword": "yourpassword" }</code></div></li>
@@ -318,7 +318,7 @@
                 <h3><strong>POST</strong> <code>/api/admin/forget-password</code></h3>
                 <ul>
                     <li>Description: Initiates the password reset process for an administrator.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/forget-password</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/forget-password</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>email</code></li>
                     <li>Body: <div class="example-code"><code>{ "email": "admin@example.com" }</code></div></li>
@@ -329,7 +329,7 @@
                 <h3><strong>PATCH</strong> <code>/api/admin/reset-password/:code</code></h3>
                 <ul>
                     <li>Description: Resets the password for an administrator using a provided reset code.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/admin/reset-password/your_reset_code</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/admin/reset-password/your_reset_code</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>password</code>, <code>confirmPassword</code></li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>code</code> (required)</li>
@@ -345,7 +345,7 @@
                 <h3><strong>POST</strong> <code>/api/tour/first-book-tour</code></h3>
                 <ul>
                     <li>Description: Allows a user to book a tour.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour/first-book-tour?tourName=amazing-adventure-tour</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour/first-book-tour?tourName=amazing-adventure-tour</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="query-params"><strong>Required Query Parameters:</strong> <code>tourName</code> (slug of the tour)</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>startingDate</code>, <code>endingDate</code>, <code>fullName</code>, <code>email</code>, <code>country</code>, <code>contactNumber</code>, <code>emergencyContact</code>, <code>NumberofParticipants</code>, <code>advancePayment</code>, <code>payLater</code></li>
@@ -358,7 +358,7 @@
                 <h3><strong>POST</strong> <code>/api/tour/enquiry</code></h3>
                 <ul>
                     <li>Description: Submits an enquiry form.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour/enquiry?tourId=654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour/enquiry?tourId=654321abcdef</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="query-params"><strong>Required Query Parameters:</strong> <code>tourId</code></li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>fullName</code>, <code>startDate</code>, <code>email</code>, <code>country</code>, <code>contact</code>, <code>question</code></li>
@@ -370,7 +370,7 @@
                 <h3><strong>POST</strong> <code>/api/tour/pay-with-esewa</code></h3>
                 <ul>
                     <li>Description: Initiates a payment process using Esewa. This route uses data from the previous <code>first-book-tour</code> session.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour/pay-with-esewa</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour/pay-with-esewa</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="required-session"><strong>Required Session Data (from <code>first-book-tour</code>):</strong> <code>bookingData</code> (containing <code>advancePayment</code>)</li>
                 </ul>
@@ -380,7 +380,7 @@
                 <h3><strong>GET</strong> <code>/api/tour/:transactionId/payment-success</code></h3>
                 <ul>
                     <li>Description: Callback route for successful Esewa payments. The <code>:transactionId</code> is provided by Esewa.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour/your_transaction_id/payment-success?data=encoded_esewa_data</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour/your_transaction_id/payment-success?data=encoded_esewa_data</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>transactionId</code> (required)</li>
                     <li class="query-params"><strong>Required Query Parameters:</strong> <code>data</code> (base64 encoded JSON string from Esewa)</li>
@@ -391,7 +391,7 @@
                 <h3><strong>GET</strong> <code>/api/tour/payment-failure</code></h3>
                 <ul>
                     <li>Description: Callback route for failed Esewa payments.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour/payment-failure</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour/payment-failure</code></div></li>
                     <li>Authentication: Not Required</li>
                 </ul>
             </div>
@@ -414,7 +414,7 @@
                 <h3><strong>GET</strong> <code>/api/get-tour/:id</code></h3>
                 <ul>
                     <li>Description: Retrieves details of a single tour by its ID.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/get-tour/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tour/654321abcdef</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>id</code> (required)</li>
                 </ul>
@@ -424,7 +424,7 @@
                 <h3><strong>POST</strong> <code>/api/tour-admin/post-tour</code></h3>
                 <ul>
                     <li>Description: Creates a new tour entry (admin only). Requires <code>thumbnail</code> file upload.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour-admin/post-tour</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour-admin/post-tour</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>tourName</code>, <code>country</code>, <code>grade</code>, <code>activity</code>, <code>originalPrice</code>, <code>accomodation</code>, <code>region</code>, <code>distance</code>, <code>startPoint</code>, <code>discount</code>, <code>endPoint</code>, <code>duration</code>, <code>maxAltitude</code>, <code>mealsIncluded</code>, <code>groupSize</code>, <code>natureOfTour</code>, <code>bestSeason</code>, <code>activityPerDay</code>, <code>transportation</code></li>
                     <li class="required-file"><strong>Required File:</strong> <code>thumbnail</code> (single file upload)</li>
@@ -436,7 +436,7 @@
                 <h3><strong>PATCH</strong> <code>/api/tour-admin/update-tour/:id</code></h3>
                 <ul>
                     <li>Description: Updates the details of an existing tour by its ID (admin only). Requires <code>thumbnail</code> file upload.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour-admin/update-tour/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour-admin/update-tour/654321abcdef</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>id</code> (required)</li>
                     <li class="optional-fields"><strong>Optional Body Fields:</strong> <code>tourName</code>, <code>country</code>, <code>grade</code>, <code>activity</code>, <code>originalPrice</code>, <code>accomodation</code>, <code>region</code>, <code>distance</code>, <code>startPoint</code>, <code>discount</code>, <code>endPoint</code>, <code>duration</code>, <code>maxAltitude</code>, <code>mealsIncluded</code>, <code>groupSize</code>, <code>natureOfTour</code>, <code>bestSeason</code>, <code>activityPerDay</code>, <code>transportation</code> (at least one of these must be provided for update)</li>
@@ -449,7 +449,7 @@
                 <h3><strong>POST</strong> <code>/api/create-description/:tourId</code></h3>
                 <ul>
                     <li>Description: Creates a description for a specific tour.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/create-description/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/create-description/654321abcdef</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>tourId</code> (required)</li>
                     <li class="required-fields"><strong>Required Body Fields:</strong> <code>shortDescription</code>, <code>detailedDescription</code>, <code>highlights</code></li>
@@ -461,7 +461,7 @@
                 <h3><strong>PATCH</strong> <code>/api/update-description/:tourId</code></h3>
                 <ul>
                     <li>Description: Updates the description for a specific tour.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/update-description/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/update-description/654321abcdef</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>tourId</code> (required)</li>
                     <li class="optional-fields"><strong>Optional Body Fields:</strong> <code>shortDescription</code>, <code>detailedDescription</code>, <code>highlights</code> (at least one of these must be provided for update)</li>
@@ -473,7 +473,7 @@
                 <h3><strong>GET</strong> <code>/api/get-description/:tourId</code></h3>
                 <ul>
                     <li>Description: Retrieves the description for a specific tour by its ID.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/get-description/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-description/654321abcdef</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>tourId</code> (required)</li>
                 </ul>
@@ -483,7 +483,7 @@
                 <h3><strong>DELETE</strong> <code>/api/tour-admin/delete-tour/:id</code></h3>
                 <ul>
                     <li>Description: Deletes a tour entry by its ID (admin only).</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tour-admin/delete-tour/654321abcdef</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tour-admin/delete-tour/654321abcdef</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>id</code> (required)</li>
                 </ul>
@@ -493,7 +493,7 @@
                 <h3><strong>GET</strong> <code>/api/get-tour-by-slug/:slug</code></h3>
                 <ul>
                     <li>Description: Retrieves details of a single tour by its slug.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/get-tour-by-slug/amazing-adventure-tour</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tour-by-slug/amazing-adventure-tour</code></div></li>
                     <li>Authentication: Not Required</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>slug</code> (required)</li>
                 </ul>
@@ -503,7 +503,7 @@
                 <h3><strong>POST</strong> <code>/api/tours/:id/images</code></h3>
                 <ul>
                     <li>Description: Uploads multiple images for a specific tour (admin only). Accepts up to 10 images.</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/tours/654321abcdef/images</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/tours/654321abcdef/images</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>id</code> (required)</li>
                     <li class="required-file"><strong>Required File:</strong> <code>images</code> (array of files, max 10)</li>
@@ -515,7 +515,7 @@
                 <h3><strong>DELETE</strong> <code>/api/delete/:tourId/images/:publicId</code></h3>
                 <ul>
                     <li>Description: Deletes a specific image associated with a tour (admin only).</li>
-                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/get-tours/api/delete/654321abcdef/images/public_id_of_image</code></div></li>
+                    <li>Example: <div class="example-code"><code>https://modified-travel-and-tour.onrender.com/api/delete/654321abcdef/images/public_id_of_image</code></div></li>
                     <li>Authentication: Required (JWT)</li>
                     <li class="path-params"><strong>Path Parameters:</strong> <code>tourId</code> (required), <code>publicId</code> (required)</li>
                 </ul>

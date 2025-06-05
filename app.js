@@ -53,7 +53,7 @@ app.use(session({
     saveUninitialized: false,
     cookie: {
         secure: process.env.NODE_ENV === 'production', // Set to false for local HTTP testing
-        sameSite: 'None', // Must be 'None' for cross-site
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Adjusted for local development
         maxAge: 1000 * 60 * 60,
         httpOnly: true,
     },
