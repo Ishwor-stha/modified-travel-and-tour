@@ -4,17 +4,15 @@ const dotenv = require("dotenv");
 // Load environment variables
 dotenv.config();
 
-if(process.env.local){
-    // Define the port
+const startServer=()=>{
+   // Define the port
     const PORT = process.env.PORT || 3000;
     // Start the server
      app.listen(PORT, () => {
          console.log(`Server is running on port ${PORT}`);
          console.log(`App is running in ${process.env.NODE_ENV} mode`);
      });
-
-}else{
-    
-    module.exports=(req,res)=>app(req,res);
 }
+
+process.env.local?startServer():module.exports=(req,res)=>app(req,res);
 
