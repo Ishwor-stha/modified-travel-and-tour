@@ -509,7 +509,7 @@ module.exports.uploadImageForTour = async (req, res, next) => {
 // @endpoint: localhost:6000/api/delete/:tourId/images/:publicId
 module.exports.deleteOneImageOfTour = async (req, res, next) => {
     try {
-
+        
         await databaseConnect();
 
         const { tourId, publicId } = req.params
