@@ -5,7 +5,6 @@ const { isValidNepaliPhoneNumber } = require("../utils/validatePhoneNumber");
 const { sendMessage } = require("../utils/nodemailer");
 const { enquiryMessage } = require("../utils/enquiryMessage");
 const { successMessage } = require("../utils/sucessMessage");
-const slugify = require("slugify");
 const { capaitlize } = require("../utils/capitalizedFirstLetter");
 const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
@@ -23,7 +22,7 @@ const checkMissingFields = (body, fields) => {
 };
 
 //getTours
-const TOUR_FILTER_FIELDS = ["country", "activity", "grade"];
+const TOUR_FILTER_FIELDS = ["country", "activity", "grade","tourName"];
 //postTour /updateTour
 const TOUR_POST_FIELDS = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
     "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
@@ -174,24 +173,7 @@ module.exports.getOneTour = async (req, res, next) => {
 }
 
 
-module.exports.getOneTourForSearch = async (req, res, next) => {
-    try {
-        await databaseConnect();
 
-        const { tourName } = req.params;
-        if (!tourName ) return next(new errorHandler("No tourName given of tour.Please try again.", 400));
-        const slug=slugify(tourName)
-        const tour = await Tour.findOne({ slug: slug }, "-popularity");
-        if (!tour) return next(new errorHandler("No tour found.Please try again.", 404));
-        res.status(200).json({
-            status: true,
-            tour
-        });
-
-    } catch (error) {
-        return next(new errorHandler(error.message, error.statusCode || 500));
-    }
-}
 // @method POST
 // @desc: Controller to add new tours
 // @endpoint: localhost:6000/api/tour-admin/post-tour
