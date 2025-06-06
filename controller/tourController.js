@@ -173,6 +173,25 @@ module.exports.getOneTour = async (req, res, next) => {
     }
 }
 
+
+module.exports.getOneTourForSearch = async (req, res, next) => {
+    try {
+        await databaseConnect();
+
+        const { tourName } = req.params;
+        if (!tourName ) return next(new errorHandler("No tourName given of tour.Please try again.", 400));
+        const slug=slugify(tourName)
+        const tour = await Tour.findOne({ slug: slug }, "-popularity");
+        if (!tour) return next(new errorHandler("No tour found.Please try again.", 404));
+        res.status(200).json({
+            status: true,
+            tour
+        });
+
+    } catch (error) {
+        return next(new errorHandler(error.message, error.statusCode || 500));
+    }
+}
 // @method POST
 // @desc: Controller to add new tours
 // @endpoint: localhost:6000/api/tour-admin/post-tour

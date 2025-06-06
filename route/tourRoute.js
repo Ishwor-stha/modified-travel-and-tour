@@ -1,7 +1,7 @@
 const express = require("express");
 const Router = express.Router();
 const { postTour, updateTour, deleteTour, getOneTour, getTours, getOneTourById,
-    createDescriptionOfTour, updateTourDescription, getOneTourDescriptionId, uploadImageForTour, deleteOneImageOfTour } = require("../controller/tourController.js");
+    createDescriptionOfTour, updateTourDescription, getOneTourDescriptionId, uploadImageForTour, deleteOneImageOfTour ,getOneTourForSearch} = require("../controller/tourController.js");
 const { checkJwt } = require("../middlewares/checkjwt.js");
 
 
@@ -34,6 +34,8 @@ Router.route("/create-description/:tourId").post(checkJwt, createDescriptionOfTo
 Router.route("/update-description/:tourId").patch(checkJwt, updateTourDescription)
 
 Router.route("/get-description/:tourId").get(getOneTourDescriptionId)
+
+Router.route("/search-tour/:tourName").get(getOneTourForSearch);
 
 
 
