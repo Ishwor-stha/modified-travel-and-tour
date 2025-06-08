@@ -22,7 +22,7 @@ const checkMissingFields = (body, fields) => {
 };
 
 //getTours
-const TOUR_FILTER_FIELDS = ["country", "activity", "grade","tourName"];
+const TOUR_FILTER_FIELDS = ["country", "activity", "grade", "tourName"];
 //postTour /updateTour
 const TOUR_POST_FIELDS = ["tourName", "country", "grade", "activity", "originalPrice", "accomodation", "region", "distance", "startPoint", "discount", "endPoint",
     "duration", "maxAltitude", "mealsIncluded", "groupSize", "natureOfTour", "bestSeason", "activityPerDay", "transportation"];
@@ -37,13 +37,13 @@ const OPTIONAL_BOOKING_FIELDS = ["flightArrivalDate", "flightDepartureDate", "ot
 
 // Helper function for calculating discounted price
 const calculateDiscountedPrice = (originalPrice, discount) => {
- 
+
     const price = parseFloat(originalPrice);
     const disc = parseFloat(discount);
     if (Number.isNaN(price) || Number.isNaN(disc)) {
         return { error: "Price or Discount must be numbers." };
     }
-    if(isValidNumber(discount )) return {error:"The discount must be in between 0-100."};
+    if (isValidNumber(discount)) return { error: "The discount must be in between 0-100." };
     return { discountedPrice: price - (price * (disc / 100)) };
 };
 
@@ -98,12 +98,14 @@ module.exports.getTours = async (req, res, next) => {
         }
 
         // Respond
-        res.status(200).json({
+        const response = {
             pageNo: currentPage,
             totalTours,
             status: true,
-            tourList,
-        });
+            tourList
+        }
+        
+        res.status(200).json(response);
     } catch (error) {
         return next(new errorHandler(error.message || "Something went wrong", error.statusCode || 500));
     }
@@ -120,10 +122,12 @@ module.exports.getOneTourDescriptionId = async (req, res, next) => {
         if (!tourId) return next(new errorHandler("No id given of tour.Please try again.", 400));
         const tourDescription = await Description.findOne({ "tourId": tourId });
         if (!tourDescription) return next(new errorHandler("No tour description found.Please try again.", 404));
-        res.status(200).json({
+        const response={
             status: true,
             tourDescription
-        });
+        }
+        
+        res.status(200).json(response);
 
     } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
@@ -205,7 +209,7 @@ module.exports.postTour = async (req, res, next) => {
             if (Number.isNaN(price) || Number.isNaN(discount)) {
                 return next(new errorHandler("Price or Discount must be numbers.", 400));
             }
-            if(isValidNumber(discount )) return next(new errorHandler("The discount must be in between 0-100.", 400));
+            if (isValidNumber(discount)) return next(new errorHandler("The discount must be in between 0-100.", 400));
             data.discountedPrice = price - (price * (discount / 100));
             data.discount = req.body.discount;
         }
@@ -509,7 +513,7 @@ module.exports.uploadImageForTour = async (req, res, next) => {
 // @endpoint: localhost:6000/api/delete/:tourId/images/:publicId
 module.exports.deleteOneImageOfTour = async (req, res, next) => {
     try {
-        
+
         await databaseConnect();
 
         const { tourId, publicId } = req.params

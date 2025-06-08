@@ -17,4 +17,4 @@ const connectRedis = async () => {
   console.log("Redis connected successfully.");
 };
 
-module.exports = {  connectRedis, store };
+module.exports = {  connectRedis, store,client };
