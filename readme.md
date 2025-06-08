@@ -186,4 +186,5 @@ The API follows a RESTful design. All endpoints are prefixed with `/api/`.
     ├── rateLimit.js            # Rate limiting configuration
     ├── sendMessage.js          # Generic message sending utility
     ├── sucessMessage.js        # Success message utility
+    ├── redis.js                # Redis client and session store configuration
     └── validatePhoneNumber.js  # Phone number validation utility
