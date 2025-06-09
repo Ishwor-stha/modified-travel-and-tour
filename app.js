@@ -54,8 +54,8 @@ app.use(session({
     saveUninitialized: false,
     store,
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // Set to false for local HTTP testing
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // Adjusted for local development
+        secure: process.env.NODE_ENV === 'production' ? true : false, // Explicitly set secure based on NODE_ENV
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'None', // Set SameSite to 'None' for both production and development
         maxAge: 1000 * 60 * 60,
         httpOnly: true,
     },
