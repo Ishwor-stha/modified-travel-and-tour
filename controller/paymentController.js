@@ -46,7 +46,10 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 
         // console.log(pay.request.res.responseUrl)
-        res.redirect(pay.request.res.responseUrl)
+        // res.redirect(pay.request.res.responseUrl)
+        res.status(200).json({
+            url:pay.request.res.responseUrl
+        })
 
 
 
