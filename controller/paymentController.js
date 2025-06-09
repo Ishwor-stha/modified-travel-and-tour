@@ -137,7 +137,7 @@ module.exports.paymentSucess = async (req, res, next) => {
         res.clearCookie('connect.sid');
 
 
-        return res.sendFile(path.join(__dirname, 'public', 'sucess.html'));
+        return res.sendFile(path.join(__dirname, '..', 'public', 'sucess.html'));
 
     } catch (error) {
         req.session.destroy();
@@ -154,7 +154,7 @@ module.exports.paymentFailure = async (req, res, next) => {
     try {
         req.session.destroy();
         res.clearCookie('connect.sid');
-        return res.sendFile(path.join(__dirname, 'public', 'failure.html'));
+        return res.sendFile(path.join(__dirname, '..', 'public', 'failure.html'));
 
 
 
