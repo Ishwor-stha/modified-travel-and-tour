@@ -17,7 +17,6 @@ const { limiter } = require("./utils/rateLimit");
 const helmet = require('helmet');
 const cors = require('cors');
 const { preventHPP } = require("./utils/preventHpp");
-// const errorHandling = require('./utils/errorHandling');
 
 
 
@@ -35,7 +34,6 @@ app.use(express.json({ limit: '10kb' }))//limiting the json body size to 10 kb
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 //security 
 app.use(limiter);

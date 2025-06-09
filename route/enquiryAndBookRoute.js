@@ -10,11 +10,8 @@ Router.route("/enquiry").post(enquiry);
 
 Router.route("/pay-with-esewa").post(payWithEsewa);
 Router.route("/:transactionId/payment-success").get(paymentSucess)
-// Router.route("/payment-success").get(paymentSucess)
 
 Router.route("/payment-failure").get(paymentFailure)
-// Router.route("/:transactionId/payment-success").all(paymentSucess)
-// Router.route("/payment-failure").all(paymentFailure)
 
 
 
