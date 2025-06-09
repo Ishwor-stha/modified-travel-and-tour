@@ -54,12 +54,12 @@ const calculateDiscountedPrice = (originalPrice, discount) => {
 module.exports.getTours = async (req, res, next) => {
     try {
         await databaseConnect();
-        const { page = 1, originalPrice, popularity } = req.query;
+        const { page = 1, discountedPrice, popularity } = req.query;
         let sort = {};
 
         // Sorting logic
-        if (originalPrice) {
-            sort.originalPrice = originalPrice === "asc" ? 1 : -1;
+        if (discountedPrice) {
+            sort.discountedPrice = discountedPrice === "asc" ? 1 : -1;
         }
         if (popularity) {
             sort.popularity = popularity === "asc" ? 1 : -1;
