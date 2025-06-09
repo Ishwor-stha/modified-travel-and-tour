@@ -28,7 +28,7 @@ const corsOptions = {
 }
 // loading environment variables from .env file
 dotenv.config();
-app.set('trust proxy', 1);
+// app.set('trust proxy', 1);
 
 // Middleware to parse incoming JSON requests
 app.use(express.json({ limit: '10kb' }))//limiting the json body size to 10 kb
@@ -48,19 +48,24 @@ app.use(cookieParser());
 app.use((req, res, next) => {
     sanitize(req, res, next);
 })
-app.use(session({
-    secret: process.env.SessionSecret,
-    resave: false,
-    saveUninitialized: false,
-    store,
-    cookie: {
-        secure: process.env.NODE_ENV === 'production' ? true : false, // Explicitly set secure based on NODE_ENV
-        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'None', // Set SameSite to 'None' for both production and development
-        maxAge: 1000 * 60 * 60,
-        httpOnly: true,
-    },
-}));
+const sess = {
+  secret: process.env.SessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  store,
+  cookie: {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60,
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+    secure: process.env.NODE_ENV === 'production',
+  },
+};
 
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
+app.use(session(sess));
 // Function to connect to the database
 
 (async () => {
