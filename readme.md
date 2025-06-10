@@ -64,8 +64,8 @@ To set up the project locally, follow these steps:
     DATABASE=your_mongodb_connection_string # MongoDB connection string
     URL=http://localhost:6000               # Base URL for the application
     SECRETKEY=your_application_secret_key   # Secret key for general application security
-jwtExpires=1h                           # JWT expiration time (e.g., 1 hour)
-REDIS_URL=your url        # URL for Redis connection (e.g., redis://localhost:6379 or a cloud Redis URL)
+    jwtExpires=1h                           # JWT expiration time (e.g., 1 hour)
+    REDIS_URL=your url        # URL for Redis connection (e.g., redis://localhost:6379 or a cloud Redis URL)
 
     # Cloudinary Credentials
     CLOUDNARY_SECRET=your_cloudinary_secret # Cloudinary API Secret
@@ -140,7 +140,6 @@ The API follows a RESTful design. All endpoints are prefixed with `/api/`.
 ## Folder Structure
 
 ```
-.
 ├── app.js                  # Main Express application setup
 ├── server.js               # Server entry point
 ├── package.json            # Project dependencies and scripts
