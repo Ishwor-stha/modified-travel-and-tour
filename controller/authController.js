@@ -56,7 +56,7 @@ const processUserData = async (body, isUpdate = false) => {
 
 
 
-const GLOBAL_LIMIT = 10; // Define a global constant for pagination limit
+const GLOBAL_LIMIT = 10; // Defining a global constant for pagination limit
 
 // Helper function to handle common catch block logic
 const handleControllerError = (error, next) => {

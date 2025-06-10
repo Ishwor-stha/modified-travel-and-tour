@@ -10,6 +10,7 @@ const Description = require("../modles/descriptionModel")
 const { databaseConnect } = require("../utils/databaseConnect")
 const { cloudinary } = require("../utils/clouudinary");
 const { isValidNumber } = require("../utils/isValidNumber");
+const slugify = require("slugify");
 
 
 // Helper function for checking missing fields
@@ -43,7 +44,7 @@ const calculateDiscountedPrice = (originalPrice, discount) => {
     if (Number.isNaN(price) || Number.isNaN(disc)) {
         return { error: "Price or Discount must be numbers." };
     }
-    if (isValidNumber(discount)) return { error: "The discount must be in between 0-100." };
+    if (!isValidNumber(discount)) return { error: "The discount must be in between 0-100." };
     return { discountedPrice: price - (price * (disc / 100)) };
 };
 
@@ -209,7 +210,7 @@ module.exports.postTour = async (req, res, next) => {
             if (Number.isNaN(price) || Number.isNaN(discount)) {
                 return next(new errorHandler("Price or Discount must be numbers.", 400));
             }
-            if (isValidNumber(discount)) return next(new errorHandler("The discount must be in between 0-100.", 400));
+            if (!isValidNumber(discount)) return next(new errorHandler("The discount must be in between 0-100.", 400));
             data.discountedPrice = price - (price * (discount / 100));
             data.discount = req.body.discount;
         }
