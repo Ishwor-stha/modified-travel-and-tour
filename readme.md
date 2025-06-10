@@ -89,7 +89,7 @@ To set up the project locally, follow these steps:
     SUCCESS_URL=http://localhost:6000/api/tour # URL for successful payment callback
     FAILURE_URL=http://localhost:6000/api/tour/payment-failure # URL for failed payment callback
     ```
-    *(Note: Adjust these values according to your specific setup and service providers. Ensure `NODEMAILER_USER_PASSWORD` is an app-specific password if using Gmail.)*
+    *(Note: Adjust these values according to your specific setup and service providers.)*
 
 4.  **Start the development server:**
     ```bash
