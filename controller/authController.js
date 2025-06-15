@@ -132,7 +132,9 @@ module.exports.deleteAdmin = async (req, res, next) => {
         }
         res.clearCookie('auth_token', {
             httpOnly: true,
-            sameSite: "Strict"
+            // sameSite: "Strict"
+            sameSite: "none"
+            
         });
         successMessage(res, `${capaitlize(del.role)}removed successfully.`, 200);
 
@@ -257,7 +259,9 @@ module.exports.logout = (req, res, next) => {
         //clear the cookie from browser
         res.clearCookie('auth_token', {
             httpOnly: true,
-            sameSite: "Strict"
+            // sameSite: "Strict"
+            sameSite: "none"
+
         });
         successMessage(res, "You have been logged out.", 200);
 
