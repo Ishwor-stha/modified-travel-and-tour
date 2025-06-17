@@ -20,12 +20,8 @@ const tourRatingSchema = new mongoose.Schema({
   comment: {
     type: String,
     maxlength: 1000
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now
   }
-});
+},{ timestamps: true });
 
 // Prevent the same user from rating the same tour multiple times
 tourRatingSchema.index({ tourId: 1, userId: 1 }, { unique: true });

@@ -114,7 +114,7 @@ const tourSchema = new mongoose.Schema({
 
 
 
-});
+},{ timestamps: true });
 
 
 

@@ -76,7 +76,7 @@ const userSchema = mongoose.Schema({
 
 
 
-});
+},{ timestamps: true });
 
 
 // Create and export the model

@@ -18,12 +18,8 @@ const descriptionSchema = new mongoose.Schema({
   highlights: {
     type: [String],  // Array of highlight points
     default: []
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
   }
-});
+},{ timestamps: true });
 
 const Description = mongoose.model("Description", descriptionSchema);
 
