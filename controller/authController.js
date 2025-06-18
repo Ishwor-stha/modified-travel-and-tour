@@ -175,7 +175,6 @@ module.exports.getAllAdmin = async (req, res, next) => {
     try {
         await databaseConnect()
 
-
         let { page = 1 } = req.query;
         page = Math.ceil(page);
         const limit = GLOBAL_LIMIT;
