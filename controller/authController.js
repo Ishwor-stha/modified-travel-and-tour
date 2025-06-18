@@ -278,14 +278,14 @@ module.exports.removeAdmin = async (req, res, next) => {
         await databaseConnect()
 
         const userId = req.params.id;//from url
-        if (!userId) return next(new errorHandling(`No ${capaitlize(req.user.role)} id is provided please try again.`, 400));
+        if (!userId) return next(new errorHandling(`No Admin id is provided please try again.`, 400));
         const del = await User.findByIdAndUpdate(userId, { isDeleted: true });
         // check if admin is deleted
         // if (!del) {
         if (!del) {
             throw new errorHandling("Failed to remove admin.Please try again.", 500);
         }
-        successMessage(res, `${capaitlize(req.user.role)} removed successfully.`, 200);
+        successMessage(res, `Admin removed successfully.`, 200);
 
     } catch (error) {
         handleControllerError(error, next);
