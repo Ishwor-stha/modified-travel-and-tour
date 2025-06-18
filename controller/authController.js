@@ -183,7 +183,7 @@ module.exports.getAllAdmin = async (req, res, next) => {
         let trueOrFalse
         if (req.query.isDeleted === "true") trueOrFalse = true;
         else trueOrFalse = false;
-        const allAdmin = await User.find({ isDeleted: trueOrFalse }, "-_id -password -role -isDeleted").skip(skip).limit(limit);;//exclude _id and password ....
+        const allAdmin = await User.find({ isDeleted: trueOrFalse }, "-password -role -isDeleted").skip(skip).limit(limit);;//exclude _id and password ....
         // if there is no admin
         if (!allAdmin || allAdmin.length === 0) return next(new errorHandling("No Admin found in database.", 404));
 
