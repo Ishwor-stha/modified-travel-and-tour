@@ -327,9 +327,7 @@ module.exports.forgotPassword = async (req, res, next) => {
             return next(new errorHandling("Failed to update reset token. Admin not found.", 404));
         }
         // Create the reset link
-        let resetLink
-        if (findMail.role == "admin") resetLink = `${process.env.URL}/admin/reset-password/${passwordResetToken}`;
-        else resetLink = `${process.env.URL}/user/reset-password/${passwordResetToken}`;
+        const resetLink = `${process.env.URL}/admin/reset-password/${passwordResetToken}`;
         // Construct the email message
         const message = messages(resetLink);
 
