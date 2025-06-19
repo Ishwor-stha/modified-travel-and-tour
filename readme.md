@@ -7,9 +7,9 @@ This is a robust and scalable backend application for managing travel tours, use
 *   **User Authentication:** Secure user registration, login, and session management using JWT.
 *   **Tour Management:** Create, read, update, and delete tour information.
 *   **Booking System:** Facilitate tour bookings with payment integration.
-*   **Payment Gateway Integration:** Handles payment processing (e.g., Stripe, though specific gateway details would be configured).
+*   **Payment Gateway Integration:** Handles payment processing through esewa.
 *   **Enquiry Management:** Allows users to send inquiries about tours.
-*   **Role-Based Access Control:** Differentiates between user roles (e.g., admin, regular user) for access to specific functionalities.
+*   **Role-Based Access Control
 *   **Image Uploads:** Securely upload and manage tour images using Cloudinary.
 *   **Email Notifications:** Send booking confirmations, inquiry responses, and other transactional emails.
 *   **Robust Error Handling:** Centralized error handling and logging.
