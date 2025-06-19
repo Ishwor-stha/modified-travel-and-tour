@@ -309,7 +309,7 @@ module.exports.forgotPassword = async (req, res, next) => {
             return next(new errorHandling("Please enter valid email address.", 400));
         }
         // check email in database
-        const findMail = await User.findOne({ email }, "-_id -password -code -resetExpiry");//exclude _id, password, code, and resetExpiry
+        const findMail = await User.findOne({ email }, " -password -code -resetExpiry");//exclude _id, password, code, and resetExpiry
         // no email
         if (!findMail) {
             return next(new errorHandling("Email not found.Please enter correct email address.", 404));
