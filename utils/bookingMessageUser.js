@@ -112,7 +112,9 @@ module.exports.bookingMessageUser = ({ userData,  tourData,  transaction_uuid,  
         <p>Thank you for choosing us!</p>
 
         <div class="footer">
-          &copy; ${year} Astrapi Travel And Tour. All rights reserved.
+          &copy; ${year} Ishwor Travel And Tour. All rights reserved.
+
+         <!-- &copy; ${year} Astrapi Travel And Tour. All rights reserved.-->
         </div>
       </div>
     </body>

@@ -117,7 +117,10 @@ module.exports.bookingMessageAdmin = ({
         <p>Please proceed with the necessary arrangements for this booking.</p>
 
      <div class="footer">
-          &copy; ${year} Astrapi Travel And Tour. All rights reserved.
+         &copy; ${year} Ishwor Travel And Tour. All rights reserved.
+
+
+         <!-- &copy; ${year} Astrapi Travel And Tour. All rights reserved.-->
         </div>
       </div>
     </body>
