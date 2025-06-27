@@ -11,6 +11,7 @@ const { databaseConnect } = require("../utils/databaseConnect")
 const { cloudinary } = require("../utils/clouudinary");
 const { isValidNumber } = require("../utils/isValidNumber");
 const slugify = require("slugify");
+const { getSimilarTours } = require("./recommendationController"); 
 
 
 // Helper function for checking missing fields
@@ -146,9 +147,14 @@ module.exports.getOneTourById = async (req, res, next) => {
         if (!id) return next(new errorHandler("No id given of tour.Please try again.", 400));
         const tour = await Tour.findById(id, "-popularity");
         if (!tour) return next(new errorHandler("No tour found.Please try again.", 404));
+
+        // Get similar tours for recommendation
+        const recommendedTours = await getSimilarTours(id, 3);
+
         res.status(200).json({
             status: true,
-            tour
+            tour,
+            recommendedTours 
         });
 
     } catch (error) {
@@ -167,9 +173,14 @@ module.exports.getOneTour = async (req, res, next) => {
         if (!slug) return next(new errorHandler("No slug given of tour.Please try again.", 400));
         const tour = await Tour.findOne({ slug: slug }, "-popularity");
         if (!tour) return next(new errorHandler("No tour found.Please try again.", 404));
+
+        // Get similar tours for recommendation using the tour's _id
+        const recommendedTours = await getSimilarTours(tour._id, 3);
+
         res.status(200).json({
             status: true,
-            tour
+            tour,
+            recommendedTours 
         });
 
     } catch (error) {
