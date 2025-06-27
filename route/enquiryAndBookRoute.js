@@ -1,7 +1,7 @@
 const express = require("express");
 const Router = express.Router();
 const {bookTour,enquiry} = require("../controller/tourController.js");
-const {payWithEsewa,paymentSucess,paymentFailure,paymentCallback}=require("../controller/paymentController.js")
+const {payWithEsewa,paymentSucess,paymentFailure}=require("../controller/paymentController.js")
 /*********************************Route****************************************************** */
 
 
@@ -10,7 +10,7 @@ Router.route("/enquiry").post(enquiry);
 
 Router.route("/pay-with-esewa").post(payWithEsewa);
 Router.route("/:transactionId/payment-success").get(paymentSucess)
-Router.route("/:transactionId/callback").get(paymentCallback);
+
 
 Router.route("/payment-failure").get(paymentFailure)
 

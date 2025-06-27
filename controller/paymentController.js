@@ -6,42 +6,7 @@ const { bookingMessageUser } = require("../utils/bookingMessageUser");
 const { bookingMessageAdmin } = require("../utils/bookingMessageAdmin");
 const path = require("path");
 
-module.exports.paymentCallback = async (req, res, next) => {
-  try {
-    console.log("Session in POST callback:", req.session.bookingData);
 
-     // Reverted session logs
-        console.log("Session object (paymentSucess):", req.session);
-        console.log("Session data (paymentSucess):", req.session.bookingData, req.session.tourData);
-
-        if (!req.query.data) return next(new errorHandler("Server error", 400))
-        let transactionId = req.params.transactionId
-        if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
-        transactionId = Number(transactionId)
-        const encodedData = req.query.data;
-        const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
-
-        let TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
-        TotalAmt = Number(TotalAmt); // Convert to a number
-
-        TotalAmt = Number.isInteger(TotalAmt) ? TotalAmt.toFixed(0) : TotalAmt;
-        const userSignature = `total_amount=${TotalAmt},transaction_uuid=${transactionId},product_code=${process.env.PRODUCT_CODE}`;
-        const esewaSignature = `total_amount=${TotalAmt},transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
-
-        const userHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(userSignature).digest("base64");
-        const esewaHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(esewaSignature).digest("base64");
-
-        if (userHash !== esewaHash) {
-            return next(new errorHandler("Hash doesnot match.", 400))
-        }
-
-    // Redirect internally so the session cookie (SameSite=None; Secure) is preserved
-    return res.redirect(302, `${process.env.URL}/api/tour/${transactionId}/payment-success?totalAmount=${TotalAmt}`);
-  } catch (error) {
-        return next(new errorHandler(error.message, error.statusCode || 500));
-    
-  }
-};
 // @method POST
 // @desc: Controller to initiate payment with Esewa
 // @endpoint: localhost:6000/api/tour/pay-with-esewa
@@ -69,7 +34,7 @@ module.exports.payWithEsewa = async (req, res, next) => {
             transaction_uuid,
             product_code: process.env.PRODUCT_CODE,
             // success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/payment-success`,
-             success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/callback`,
+             success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/payment-success`,
             
             failure_url: process.env.FAILURE_URL,
             signed_field_names: 'total_amount,transaction_uuid,product_code',
@@ -105,34 +70,28 @@ module.exports.payWithEsewa = async (req, res, next) => {
 // @endpoint: localhost:6000/api/tour/transactionId/payment-success
 module.exports.paymentSucess = async (req, res, next) => {
     try {
-        // Reverted session logs
-        console.log("Session object (paymentSucess):", req.session);
-        console.log("Session data (paymentSucess):", req.session.bookingData, req.session.tourData);
+        
 
-        // if (!req.query.data) return next(new errorHandler("Server error", 400))
-        // let transactionId = req.params.transactionId
-        // if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
-        // transactionId = Number(transactionId)
-        // const encodedData = req.query.data;
-        // const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
-
-        // let TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
-        // TotalAmt = Number(TotalAmt); // Convert to a number
-
-        // TotalAmt = Number.isInteger(TotalAmt) ? TotalAmt.toFixed(0) : TotalAmt;
-        // const userSignature = `total_amount=${TotalAmt},transaction_uuid=${transactionId},product_code=${process.env.PRODUCT_CODE}`;
-        // const esewaSignature = `total_amount=${TotalAmt},transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
-
-        // const userHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(userSignature).digest("base64");
-        // const esewaHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(esewaSignature).digest("base64");
-
-        // if (userHash !== esewaHash) {
-        //     return next(new errorHandler("Hash doesnot match.", 400))
-        // }
-
-        const TotalAmt=Number(req.params.totalAmount)
+        if (!req.query.data) return next(new errorHandler("Server error", 400))
         let transactionId = req.params.transactionId
+        if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
         transactionId = Number(transactionId)
+        const encodedData = req.query.data;
+        const decodedData = JSON.parse(Buffer.from(encodedData, "base64").toString("utf-8"));
+
+        let TotalAmt = decodedData.total_amount.replace(/,/g, '')//removing the comma from the amount for hashing the message ie (5,000)=>(5000)
+        TotalAmt = Number(TotalAmt); // Convert to a number
+
+        TotalAmt = Number.isInteger(TotalAmt) ? TotalAmt.toFixed(0) : TotalAmt;
+        const userSignature = `total_amount=${TotalAmt},transaction_uuid=${transactionId},product_code=${process.env.PRODUCT_CODE}`;
+        const esewaSignature = `total_amount=${TotalAmt},transaction_uuid=${decodedData.transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
+
+        const userHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(userSignature).digest("base64");
+        const esewaHash = crypto.createHmac("sha256", process.env.SECRET_KEY).update(esewaSignature).digest("base64");
+
+        if (userHash !== esewaHash) {
+            return next(new errorHandler("Hash doesnot match.", 400))
+        }
 
         
         const response = await axios.get(process.env.STATUS_CHECK, {
@@ -143,8 +102,8 @@ module.exports.paymentSucess = async (req, res, next) => {
             params: {
                 product_code: process.env.PRODUCT_CODE,
                 total_amount: TotalAmt,
-                // transaction_uuid: decodedData.transaction_uuid
-                 transaction_uuid: transactionId
+                transaction_uuid: decodedData.transaction_uuid
+
 
             }
         });
