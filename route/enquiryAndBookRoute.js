@@ -10,7 +10,7 @@ Router.route("/enquiry").post(enquiry);
 
 Router.route("/pay-with-esewa").post(payWithEsewa);
 Router.route("/:transactionId/payment-success").get(paymentSucess)
-Router.route("/:transactionId/callback").post(paymentCallback);
+Router.route("/:transactionId/callback").get(paymentCallback);
 
 Router.route("/payment-failure").get(paymentFailure)
 
