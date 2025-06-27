@@ -13,6 +13,7 @@ const path = require("path");
 module.exports.payWithEsewa = async (req, res, next) => {
     try {
         const bookingData = req.session.bookingData
+        console.log("Session data before redirect (payWithEsewa):", bookingData); // Added log
         const amount = bookingData["advancePayment"];
         const tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0;
 
@@ -64,6 +65,8 @@ module.exports.payWithEsewa = async (req, res, next) => {
 // @endpoint: localhost:6000/api/tour/:transactionId/payment-success
 module.exports.paymentSucess = async (req, res, next) => {
     try {
+        console.log("Session object (paymentSucess):", req.session); // Added log
+        console.log("Session data (paymentSucess):", req.session.bookingData, req.session.tourData); // Added log
 
         if (!req.query.data) return next(new errorHandler("Server error", 400))
         let transactionId = req.params.transactionId
@@ -106,7 +109,12 @@ module.exports.paymentSucess = async (req, res, next) => {
             req.session.destroy();
             res.clearCookie('connect.sid');
 
-            return next(new errorHandler("User data or booking data is missing.", 400));
+            // Modified to send JSON response
+            return res.status(400).json({
+                status: "false",
+                message: "User data or booking data is missing.",
+                details: "Something went wrong.Please try again."
+            });
         }
 
         const htmlMessageUser = bookingMessageUser({
