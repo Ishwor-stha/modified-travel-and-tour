@@ -14,13 +14,14 @@ module.exports.payWithEsewa = async (req, res, next) => {
     try {
         const bookingData = req.session.bookingData
         const tourData=req.session.tourData
-        console.log("Session data before redirect (payWithEsewa):", bookingData); // Added log
+        console.log("Session data before redirect (payWithEsewa):", bookingData); 
         const amount = bookingData["advancePayment"];
         const tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0;
 
         if (!amount) return next(new errorHandler("No amount is given.", 400));
         if (amount <= 0) return errorHandler("Amount must be above 0.", 400);
         const total_amount = parseFloat(amount) + parseFloat(tax_amount) + parseFloat(product_service_charge) + parseFloat(product_delivery_charge);
+        
         const transaction_uuid = Date.now();
         const message = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${process.env.PRODUCT_CODE}`;
         const signature = crypto.createHmac('sha256', process.env.SECRET_KEY).update(message).digest('base64');
@@ -32,7 +33,7 @@ module.exports.payWithEsewa = async (req, res, next) => {
             product_delivery_charge: parseFloat(product_delivery_charge),
             transaction_uuid,
             product_code: process.env.PRODUCT_CODE,
-            success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/${encodeURIComponent(JSON.stringify(bookingData))}/${encodeURIComponent(JSON.stringify(tourData))}/payment-success`, // Pass data as path params
+            success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/payment-success`,
             failure_url: process.env.FAILURE_URL,
             signed_field_names: 'total_amount,transaction_uuid,product_code',
             signature: signature,
@@ -64,13 +65,15 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 // @method GET
 // @desc: Controller for successful payment callback
-// @endpoint: localhost:6000/api/tour/payment-success
+// @endpoint: localhost:6000/api/tour/transactionId/payment-success
 module.exports.paymentSucess = async (req, res, next) => {
     try {
-       
+        // Reverted session logs
+        console.log("Session object (paymentSucess):", req.session);
+        console.log("Session data (paymentSucess):", req.session.bookingData, req.session.tourData);
 
         if (!req.query.data) return next(new errorHandler("Server error", 400))
-        let transactionId = req.params.transactionId // Get transactionId from path params
+        let transactionId = req.params.transactionId
         if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
         transactionId = Number(transactionId)
         const encodedData = req.query.data;
@@ -103,14 +106,10 @@ module.exports.paymentSucess = async (req, res, next) => {
             }
         });
 
-
-        const userData = JSON.parse(decodeURIComponent(req.params.bookingData)); // Get bookingData from path params
-        const tourData = JSON.parse(decodeURIComponent(req.params.tourData)); // Get tourData from path params
-        console.log("Parsed userData (paymentSucess):", userData); // Added log
-        console.log("Parsed tourData (paymentSucess):", tourData); // Added log
-
+        const userData = req.session.bookingData
+        const tourData = req.session.tourData
         if (!userData || !tourData) {
-            req.session.destroy(); // Still destroy session if data is missing from query params
+            req.session.destroy();
             res.clearCookie('connect.sid');
 
             // Modified to send JSON response
@@ -145,7 +144,8 @@ module.exports.paymentSucess = async (req, res, next) => {
         // message sent to user
         await sendMessage(res, userData.email, "Payment Details", htmlMessageUser);
         await sendMessage(res, process.env.NODEMAILER_USER, "Payment Details", htmlMessageAdmin);
-        // Removed session destroy and cookie clear from success path as data is now from query params
+        req.session.destroy();
+        res.clearCookie('connect.sid');
 
 
         return res.sendFile(path.join(__dirname, '..', 'public', 'sucess.html'));

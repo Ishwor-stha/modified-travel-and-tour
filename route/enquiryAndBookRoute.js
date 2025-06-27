@@ -9,7 +9,7 @@ Router.route("/first-book-tour").post(bookTour);
 Router.route("/enquiry").post(enquiry);
 
 Router.route("/pay-with-esewa").post(payWithEsewa);
-Router.route("/:transactionId/:bookingData/:tourData/payment-success").get(paymentSucess)
+Router.route("/:transactionId/payment-success").get(paymentSucess)
 
 Router.route("/payment-failure").get(paymentFailure)
 
