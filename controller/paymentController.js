@@ -13,6 +13,7 @@ const path = require("path");
 module.exports.payWithEsewa = async (req, res, next) => {
     try {
         const bookingData = req.session.bookingData
+        const tourData=req.session.tourData
         console.log("Session data before redirect (payWithEsewa):", bookingData); // Added log
         const amount = bookingData["advancePayment"];
         const tax_amount = 0, product_service_charge = 0, product_delivery_charge = 0;
