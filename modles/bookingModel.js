@@ -6,8 +6,8 @@ const bookingSchema = new mongoose.Schema({
         required: true
     },
     tourId: {
-        type: mongoose.Schema.ObjectId, // Reference to the Tour model
-        ref: 'Tour', // Assuming your Tour model is named 'Tour'
+        type: mongoose.Schema.ObjectId,
+        ref: 'tour',
         required: true
     },
     transaction_uuid: {

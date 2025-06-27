@@ -19,36 +19,36 @@ const tourSchema = new mongoose.Schema({
     },
     accomodation: {
         type: String,
-        require: [true, "Accomodation field is empty."]
+        required: [true, "Accomodation field is empty."]
     },
     region: {
         type: String,
-        require: [true, "Region field is empty."]
+        required: [true, "Region field is empty."]
     },
     distance: {
         type: String,
-        require: [true, "Distance field is empty."]
+        required: [true, "Distance field is empty."]
     },
     startPoint: {
         type: String,
-        require: [true, "Starting point field is empty."]
+        required: [true, "Starting point field is empty."]
 
 
     },
     endPoint: {
         type: String,
-        require: [true, "End point field is empty."]
+        required: [true, "End point field is empty."]
 
 
     },
     duration: {
         type: String,
-        require: [true, "Duration field is empty."]
+        required: [true, "Duration field is empty."]
 
     },
     maxAltitude: {
         type: String,
-        require: [true, "Max altitude field is empty."]
+        required: [true, "Max altitude field is empty."]
 
     },
     mealsIncluded: {
