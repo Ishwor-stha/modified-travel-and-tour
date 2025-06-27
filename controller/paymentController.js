@@ -36,7 +36,7 @@ module.exports.paymentCallback = async (req, res, next) => {
         }
 
     // Redirect internally so the session cookie (SameSite=None; Secure) is preserved
-    return res.redirect(302, `${process.env.URL}/api/tour/${req.params.transaction_uuid}/payment-success?totalAmount=${TotalAmt}`);
+    return res.redirect(302, `${process.env.URL}/api/tour/${transactionId}/payment-success?totalAmount=${TotalAmt}`);
   } catch (error) {
         return next(new errorHandler(error.message, error.statusCode || 500));
     
