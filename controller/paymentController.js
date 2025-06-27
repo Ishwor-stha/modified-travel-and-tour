@@ -31,7 +31,7 @@ module.exports.payWithEsewa = async (req, res, next) => {
             product_delivery_charge: parseFloat(product_delivery_charge),
             transaction_uuid,
             product_code: process.env.PRODUCT_CODE,
-            success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/payment-success`,
+            success_url: `${process.env.SUCCESS_URL}/${transaction_uuid}/${encodeURIComponent(JSON.stringify(bookingData))}/${encodeURIComponent(JSON.stringify(tourData))}/payment-success`, // Pass data as path params
             failure_url: process.env.FAILURE_URL,
             signed_field_names: 'total_amount,transaction_uuid,product_code',
             signature: signature,
@@ -63,14 +63,13 @@ module.exports.payWithEsewa = async (req, res, next) => {
 
 // @method GET
 // @desc: Controller for successful payment callback
-// @endpoint: localhost:6000/api/tour/:transactionId/payment-success
+// @endpoint: localhost:6000/api/tour/payment-success
 module.exports.paymentSucess = async (req, res, next) => {
     try {
-        console.log("Session object (paymentSucess):", req.session); // Added log
-        console.log("Session data (paymentSucess):", req.session.bookingData, req.session.tourData); // Added log
+       
 
         if (!req.query.data) return next(new errorHandler("Server error", 400))
-        let transactionId = req.params.transactionId
+        let transactionId = req.params.transactionId // Get transactionId from path params
         if (!transactionId) return next(new errorHandler("Cannot get transaction id", 400))
         transactionId = Number(transactionId)
         const encodedData = req.query.data;
@@ -104,10 +103,13 @@ module.exports.paymentSucess = async (req, res, next) => {
         });
 
 
-        const userData = req.session.bookingData
-        const tourData = req.session.tourData
+        const userData = JSON.parse(decodeURIComponent(req.params.bookingData)); // Get bookingData from path params
+        const tourData = JSON.parse(decodeURIComponent(req.params.tourData)); // Get tourData from path params
+        console.log("Parsed userData (paymentSucess):", userData); // Added log
+        console.log("Parsed tourData (paymentSucess):", tourData); // Added log
+
         if (!userData || !tourData) {
-            req.session.destroy();
+            req.session.destroy(); // Still destroy session if data is missing from query params
             res.clearCookie('connect.sid');
 
             // Modified to send JSON response
@@ -142,14 +144,13 @@ module.exports.paymentSucess = async (req, res, next) => {
         // message sent to user
         await sendMessage(res, userData.email, "Payment Details", htmlMessageUser);
         await sendMessage(res, process.env.NODEMAILER_USER, "Payment Details", htmlMessageAdmin);
-        req.session.destroy();
-        res.clearCookie('connect.sid');
+        // Removed session destroy and cookie clear from success path as data is now from query params
 
 
         return res.sendFile(path.join(__dirname, '..', 'public', 'sucess.html'));
 
     } catch (error) {
-        req.session.destroy();
+        req.session.destroy(); // Keep session destroy and cookie clear in error path
         res.clearCookie('connect.sid');
         return next(new errorHandler(error.message, error.statusCode || 500))
     }
